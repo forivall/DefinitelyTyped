@@ -2,7 +2,7 @@
 // Project: https://github.com/petkaantonov/bluebird
 // Definitions by: Leonard Hecker <https://github.com/lhecker>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 2.3
+// TypeScript Version: 2.8
 
 /*!
  * The code following this comment originates from:
@@ -1058,7 +1058,16 @@ declare namespace Bluebird {
      * If the the callback is called with multiple success values, the resolver fulfills its promise with an array of the values.
      */
     // TODO specify resolver callback
-    callback(err: any, value: R, ...values: R[]): void;
+    callback(err: any,
+        value1: R extends [infer R1, any, any] ? R1 : never,
+        value2: R extends [any, infer R2, any] ? R2 : never,
+        value3: R extends [any, any, infer R3] ? R3 : never
+    ): void;
+    callback(err: any,
+        value1: R extends [infer R1, any] ? R1 : never,
+        value2: R extends [any, infer R2] ? R2 : never
+    ): void;
+    callback(err: any, value: R): void;
   }
 
   interface Inspection<R> {

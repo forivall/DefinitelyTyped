@@ -80,6 +80,7 @@ let voidProm: Promise<void>;
 let fooProm: Promise<Foo>;
 let barProm: Promise<Bar>;
 let fooOrBarProm: Promise<Foo | Bar>;
+let fooBarProm: Promise<[Foo, Bar]>;
 let bazProm: Promise<Baz>;
 
 // - - - - - - - - - - - - - - - - -
@@ -138,6 +139,7 @@ let barThenArrThen: PromiseLike<Array<PromiseLike<Bar>>>;
 
 let fooResolver: Promise.Resolver<Foo>;
 let barResolver: Promise.Resolver<Bar>;
+let fooBarResolver: Promise.Resolver<[Foo, Bar]>;
 
 let fooInspection: Promise.Inspection<Foo>;
 let fooInspectionPromise: Promise<Promise.Inspection<Foo>>;
@@ -797,6 +799,12 @@ voidProm = Promise.reject(reason);
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 fooResolver = Promise.defer<Foo>();
+
+let useCallback = (callback: (err: any, result1: Foo, result2: Bar) => void) => {}
+
+fooBarResolver = Promise.defer();
+useCallback(fooBarResolver.callback);
+fooBarProm = fooBarResolver.promise;
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
