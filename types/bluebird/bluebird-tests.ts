@@ -31,12 +31,13 @@ let insanity: any;
 
 interface Foo {
 	foo(): string;
+	fooNums(a1: number, a2: number, a3: number): number;
 }
 interface Bar {
 	bar(): string;
 }
 interface Baz {
-  baz(): string;
+  	baz(): string;
 }
 
 // - - - - - - - - - - - - - - - - -
@@ -82,6 +83,7 @@ let barProm: Promise<Bar>;
 let fooOrBarProm: Promise<Foo | Bar>;
 let fooBarProm: Promise<[Foo, Bar]>;
 let bazProm: Promise<Baz>;
+let fooBarBazProm: Promise<[Foo, Bar, Baz]>;
 
 // - - - - - - - - - - - - - - - - -
 
@@ -533,13 +535,17 @@ fooProm = fooProm.timeout(num, str);
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-fooProm.nodeify();
+fooProm.nodeify(undefined);
 fooProm = fooProm.nodeify((err: any) => { });
-fooProm = fooProm.nodeify((err: any, foo?: Foo) => { });
+fooProm = fooProm.nodeify((err: any, foo: Foo) => { });
+fooBarProm = fooBarProm.nodeify((err: any, fooBar: [Foo, Bar]) => { });
+fooBarProm = fooBarProm.nodeify((err: any, fooBar: [Foo, Bar]) => { }, {});
 
-fooProm.nodeify({ spread: true });
+fooProm.nodeify(undefined, { spread: true });
 fooProm = fooProm.nodeify((err: any) => { }, { spread: true });
-fooProm = fooProm.nodeify((err: any, foo?: Foo) => { }, { spread: true });
+fooProm = fooProm.nodeify((err: any, foo: Foo) => { }, { spread: true });
+fooBarProm = fooBarProm.nodeify((err: any, foo: Foo, bar: Bar) => { }, { spread: true });
+fooBarBazProm = fooBarBazProm.nodeify((err: any, foo: Foo, bar: Bar, baz: Baz) => { }, { spread: true });
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -557,7 +563,7 @@ bool = fooProm.isResolved();
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 anyProm = fooProm.call("foo");
-anyProm = fooProm.call("foo", 1, 2, 3);
+anyProm = fooProm.call("fooNums", 1, 2, 3);
 
 voidProm = fooProm.get("foo").then((method) => { str = method(); });
 
@@ -592,25 +598,30 @@ obj = fooProm.toJSON();
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-barProm = fooArrProm.spread<Bar>((one: Foo, two: Bar, twotwo: Foo) => {
+barProm = fooArrProm.spread((one: Foo, two: Foo, twotwo: Foo) => {
 	return bar;
+});
+
+barProm = fooBarProm.spread((one: Foo, two: Bar) => {
+	return two;
+});
+
+barProm = fooBarBazProm.spread((one: Foo, two: Bar, three: Baz) => {
+	return two;
 });
 
 // - - - - - - - - - - - - - - - - -
 
-barProm = fooArrProm.spread<Bar>((one: Foo, two: Bar, twotwo: Foo) => {
+barProm = fooArrProm.spread((one: Foo, two: Foo, twotwo: Foo) => {
 	return barThen;
 });
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-// TODO fix collection inference
-
-barArrProm = fooProm.all<Bar>();
 fooInspectionPromise = fooProm.reflect();
-barProm = fooProm.any<Bar>();
-barArrProm = fooProm.some<Bar>(num);
-barProm = fooProm.race<Bar>();
+barProm = barArrProm.any();
+barArrProm = barArrProm.some(num);
+barProm = barArrProm.race();
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -618,6 +629,7 @@ let propsValue: { num: number, str: string };
 Promise.resolve({ num: 1, str: Promise.resolve('a') }).props().then(val => { propsValue = val; });
 Promise.props({ num: 1, str: Promise.resolve('a') }).then(val => { propsValue = val; });
 Promise.props(Promise.props({ num: 1, str: Promise.resolve('a') })).then(val => { propsValue = val; });
+Promise.resolve({ num: 1, str: Promise.resolve('a') }).props().then(val => { propsValue = val; });
 
 let propsMapValue: Map<number, string>;
 Promise.resolve(new Map<number, string>()).props().then(val => { propsMapValue = val; });
@@ -651,21 +663,19 @@ Promise.all([fooProm, barProm, fooProm]).then(result => {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-// TODO fix collection inference
-
-barArrProm = fooArrProm.map<Foo, Bar>((item: Foo, index: number, arrayLength: number) => {
+barArrProm = fooArrProm.map((item: Foo, index: number, arrayLength: number) => {
 	return bar;
 });
-barArrProm = fooArrProm.map<Foo, Bar>((item: Foo) => {
+barArrProm = fooArrProm.map((item: Foo) => {
 	return bar;
 });
 
-barArrProm = fooArrProm.map<Foo, Bar>((item: Foo, index: number, arrayLength: number) => {
+barArrProm = fooArrProm.map((item: Foo, index: number, arrayLength: number) => {
 	return bar;
 }, {
 	concurrency: 1
 });
-barArrProm = fooArrProm.map<Foo, Bar>((item: Foo) => {
+barArrProm = fooArrProm.map((item: Foo) => {
 	return bar;
 }, {
 	concurrency: 1
@@ -673,10 +683,10 @@ barArrProm = fooArrProm.map<Foo, Bar>((item: Foo) => {
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-barArrProm = fooArrProm.mapSeries<Foo, Bar>((item: Foo, index: number, arrayLength: number) => {
+barArrProm = fooArrProm.mapSeries((item: Foo, index: number, arrayLength: number) => {
 	return bar;
 });
-barArrProm = fooArrProm.mapSeries<Foo, Bar>((item: Foo) => {
+barArrProm = fooArrProm.mapSeries((item: Foo) => {
 	return bar;
 });
 
@@ -800,7 +810,7 @@ voidProm = Promise.reject(reason);
 
 fooResolver = Promise.defer<Foo>();
 
-let useCallback = (callback: (err: any, result1: Foo, result2: Bar) => void) => {}
+let useCallback = (callback: (err: any, result1: Foo, result2: Bar) => void) => {};
 
 fooBarResolver = Promise.defer();
 useCallback(fooBarResolver.callback);
@@ -889,8 +899,10 @@ Promise.onPossiblyUnhandledRejection((reason: any) => {});
 
 // TODO expand tests to overloads
 fooArrProm = Promise.all(fooThenArrThen);
+fooArrProm = Promise.resolve(fooThenArrThen).all();
 fooArrProm = Promise.all(fooArrProm);
 fooArrProm = Promise.all(fooThenArr);
+fooArrProm = Promise.all(fooArr);
 fooArrProm = Promise.all(fooArr);
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

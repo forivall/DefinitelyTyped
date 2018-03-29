@@ -245,10 +245,24 @@ declare class Bluebird<R> implements PromiseLike<R>, Bluebird.Inspection<R> {
    * The error argument will be `null` in case of success.
    * If the `callback` argument is not a function, this method does not do anything.
    */
-  nodeify(callback: (err: any, value?: R) => void, options?: Bluebird.SpreadOption): this;
-  nodeify(...sink: any[]): this;
-  asCallback(callback: (err: any, value?: R) => void, options?: Bluebird.SpreadOption): this;
-  asCallback(...sink: any[]): this;
+  nodeify(callback:
+    R extends [infer R1, infer R2, infer R3, infer R4, infer R5] ? (err: any, value1: R1, value2: R2, value3: R3, value4: R4, value5: R5) => void :
+    R extends [infer R1, infer R2, infer R3, infer R4] ? (err: any, value1: R1, value2: R2, value3: R3, value4: R4) => void :
+    R extends [infer R1, infer R2, infer R3] ? (err: any, value1: R1, value2: R2, value3: R3) => void :
+    R extends [infer R1, infer R2] ? (err: any, value1: R1, value2: R2) => void :
+    R extends [infer R1] ? (err: any, value1: R1) => void : (err: any, value?: R) => void,
+    options: Bluebird.TrueSpreadOption
+  ): this;
+  nodeify(callback: (err: any, value?: R) => void, options?: Bluebird.FalseSpreadOption): this;
+  asCallback(callback:
+    R extends [infer R1, infer R2, infer R3, infer R4, infer R5] ? (err: any, value1: R1, value2: R2, value3: R3, value4: R4, value5: R5) => void :
+    R extends [infer R1, infer R2, infer R3, infer R4] ? (err: any, value1: R1, value2: R2, value3: R3, value4: R4) => void :
+    R extends [infer R1, infer R2, infer R3] ? (err: any, value1: R1, value2: R2, value3: R3) => void :
+    R extends [infer R1, infer R2] ? (err: any, value1: R1, value2: R2) => void :
+    R extends [infer R1] ? (err: any, value1: R1) => void : (err: any, value?: R) => void,
+    options: Bluebird.TrueSpreadOption
+  ): this;
+  asCallback(callback: (err: any, value?: R) => void, options?: Bluebird.FalseSpreadOption): this;
 
   /**
    * See if this `promise` has been fulfilled.
@@ -305,7 +319,23 @@ declare class Bluebird<R> implements PromiseLike<R>, Bluebird.Inspection<R> {
    * });
    * </code>
    */
-  call(propertyName: keyof R, ...args: any[]): Bluebird<any>;
+  call<P extends keyof R>(propertyName: P): R[P] extends () => infer U ? Bluebird<U> : never;
+  call<P extends keyof R>(
+    propertyName: P,
+    arg1: R[P] extends (a1: infer A) => any ? A : never
+  ): R[P] extends (a1: any) => infer U ? Bluebird<U> : never;
+  call<P extends keyof R>(
+    propertyName: P,
+    arg1: R[P] extends (a1: infer A, a2: any) => any ? A : never,
+    arg2: R[P] extends (a1: any, a2: infer A) => any ? A : never
+  ): R[P] extends (a1: any, a2: any) => infer U ? Bluebird<U> : never;
+  call<P extends keyof R>(
+    propertyName: P,
+    arg1: R[P] extends (a1: infer A, a2: any, a3: any) => any ? A : never,
+    arg2: R[P] extends (a1: any, a2: infer A, a3: any) => any ? A : never,
+    arg3: R[P] extends (a1: any, a2: any, a3: infer A) => any ? A : never
+  ): R[P] extends (a1: any, a2: any, a3: any) => infer U ? Bluebird<U> : never;
+  // call(propertyName: keyof R, ...args: any[]): Bluebird<any>;
 
   /**
    * This is a convenience method for doing:
@@ -453,14 +483,20 @@ declare class Bluebird<R> implements PromiseLike<R>, Bluebird.Inspection<R> {
   /**
    * Like calling `.then`, but the fulfillment value or rejection reason is assumed to be an array, which is flattened to the formal parameters of the handlers.
    */
-  spread<U, W>(fulfilledHandler: (...values: W[]) => U | PromiseLike<U>): Bluebird<U>;
-  spread<U>(fulfilledHandler: (...args: any[]) => U | PromiseLike<U>): Bluebird<U>;
+  spread<U>(fulfilledHandler:
+    R extends [infer R1, infer R2, infer R3, infer R4, infer R5] ? (value1: R1, value2: R2, value3: R3, value4: R4, value5: R5) => U | PromiseLike<U> :
+    R extends [infer R1, infer R2, infer R3, infer R4] ? (value1: R1, value2: R2, value3: R3, value4: R4) => U | PromiseLike<U> :
+    R extends [infer R1, infer R2, infer R3] ? (value1: R1, value2: R2, value3: R3) => U | PromiseLike<U> :
+    R extends [infer R1, infer R2] ? (value1: R1, value2: R2) => U | PromiseLike<U> :
+    R extends [infer R1] ? (value1: R1) => U | PromiseLike<U> : never
+  ): Bluebird<U>;
+  spread<U, W>(this: PromiseLike<Iterable<W>>, fulfilledHandler: (...values: W[]) => U | PromiseLike<U>): Bluebird<U>;
 
   /**
    * Same as calling `Promise.all(thisPromise)`. With the exception that if this promise is bound to a value, the returned promise is bound to that value too.
    */
   // TODO type inference from array-resolving promise?
-  all<U>(): Bluebird<U[]>;
+  all<U>(this: PromiseLike<Iterable<U | PromiseLike<U>>> | (U | PromiseLike<U>)[]): Bluebird<U[]>;
 
   /**
    * Same as calling `Promise.props(thisPromise)`. With the exception that if this promise is bound to a value, the returned promise is bound to that value too.
@@ -471,48 +507,60 @@ declare class Bluebird<R> implements PromiseLike<R>, Bluebird.Inspection<R> {
   /**
    * Same as calling `Promise.any(thisPromise)`. With the exception that if this promise is bound to a value, the returned promise is bound to that value too.
    */
-  // TODO type inference from array-resolving promise?
-  any<U>(): Bluebird<U>;
+  any<U>(this: PromiseLike<Iterable<U> | U>): Bluebird<U>;
 
   /**
    * Same as calling `Promise.some(thisPromise)`. With the exception that if this promise is bound to a value, the returned promise is bound to that value too.
    */
-  // TODO type inference from array-resolving promise?
-  some<U>(count: number): Bluebird<U[]>;
+  some<U>(this: PromiseLike<Iterable<U> | U>, count: number): Bluebird<U[]>;
 
   /**
    * Same as calling `Promise.race(thisPromise, count)`. With the exception that if this promise is bound to a value, the returned promise is bound to that value too.
    */
-  // TODO type inference from array-resolving promise?
-  race<U>(): Bluebird<U>;
+  race<U>(this: PromiseLike<Iterable<U> | U>): Bluebird<U>;
 
   /**
    * Same as calling `Bluebird.map(thisPromise, mapper)`. With the exception that if this promise is bound to a value, the returned promise is bound to that value too.
    */
-  // TODO type inference from array-resolving promise?
-  map<Q, U>(mapper: (item: Q, index: number, arrayLength: number) => U | PromiseLike<U>, options?: Bluebird.ConcurrencyOption): Bluebird<U[]>;
+  map<Q, U>(
+    this: PromiseLike<Iterable<PromiseLike<Q> | Q>>,
+    mapper: (item: Q, index: number, arrayLength: number) => U | PromiseLike<U>,
+    options?: Bluebird.ConcurrencyOption
+  ): Bluebird<U[]>;
 
   /**
    * Same as calling `Promise.reduce(thisPromise, Function reducer, initialValue)`. With the exception that if this promise is bound to a value, the returned promise is bound to that value too.
    */
-  // TODO type inference from array-resolving promise?
-  reduce<Q, U>(reducer: (memo: U, item: Q, index: number, arrayLength: number) => U | PromiseLike<U>, initialValue?: U): Bluebird<U>;
+  reduce<Q, U>(
+    this: PromiseLike<Iterable<PromiseLike<Q> | Q>>,
+    reducer: (memo: U, item: Q, index: number, arrayLength: number) => U | PromiseLike<U>,
+    initialValue?: U
+  ): Bluebird<U>;
 
   /**
    * Same as calling ``Promise.filter(thisPromise, filterer)``. With the exception that if this promise is bound to a value, the returned promise is bound to that value too.
    */
-  // TODO type inference from array-resolving promise?
-  filter<U>(filterer: (item: U, index: number, arrayLength: number) => boolean | PromiseLike<boolean>, options?: Bluebird.ConcurrencyOption): Bluebird<U[]>;
+  filter<U>(
+    this: PromiseLike<Iterable<PromiseLike<U> | U>>,
+    filterer: (item: U, index: number, arrayLength: number) => boolean | PromiseLike<boolean>,
+    options?: Bluebird.ConcurrencyOption
+  ): Bluebird<U[]>;
 
   /**
    * Same as calling ``Bluebird.each(thisPromise, iterator)``. With the exception that if this promise is bound to a value, the returned promise is bound to that value too.
    */
-  each<R, U>(iterator: (item: R, index: number, arrayLength: number) => U | PromiseLike<U>): Bluebird<R[]>;
+  each<R, U>(
+    this: PromiseLike<Iterable<PromiseLike<R> | R>>,
+    iterator: (item: R, index: number, arrayLength: number) => U | PromiseLike<U>
+  ): Bluebird<R[]>;
 
   /**
    * Same as calling ``Bluebird.mapSeries(thisPromise, iterator)``. With the exception that if this promise is bound to a value, the returned promise is bound to that value too.
    */
-  mapSeries<R, U>(iterator: (item: R, index: number, arrayLength: number) => U | PromiseLike<U>): Bluebird<U[]>;
+  mapSeries<R, U>(
+    this: PromiseLike<Iterable<PromiseLike<R> | R>>,
+    iterator: (item: R, index: number, arrayLength: number) => U | PromiseLike<U>
+  ): Bluebird<U[]>;
 
   /**
    * Cancel this `promise`. Will not do anything if this promise is already settled or if the cancellation feature has not been enabled
@@ -722,13 +770,27 @@ declare class Bluebird<R> implements PromiseLike<R>, Bluebird.Inspection<R> {
    * The promise's fulfillment value is an array with fulfillment values at respective positions to the original array.
    * If any promise in the array rejects, the returned promise is rejected with the rejection reason.
    */
-  // TODO enable more overloads
   // array with promises of different types
-  static all<T1, T2, T3, T4, T5>(values: [PromiseLike<T1> | T1, PromiseLike<T2> | T2, PromiseLike<T3> | T3, PromiseLike<T4> | T4, PromiseLike<T5> | T5]): Bluebird<[T1, T2, T3, T4, T5]>;
-  static all<T1, T2, T3, T4>(values: [PromiseLike<T1> | T1, PromiseLike<T2> | T2, PromiseLike<T3> | T3, PromiseLike<T4> | T4]): Bluebird<[T1, T2, T3, T4]>;
-  static all<T1, T2, T3>(values: [PromiseLike<T1> | T1, PromiseLike<T2> | T2, PromiseLike<T3> | T3]): Bluebird<[T1, T2, T3]>;
-  static all<T1, T2>(values: [PromiseLike<T1> | T1, PromiseLike<T2> | T2]): Bluebird<[T1, T2]>;
-  static all<T1>(values: [PromiseLike<T1> | T1]): Bluebird<[T1]>;
+  static all<T1, T2, T3, T4, T5>(values:
+    PromiseLike<[PromiseLike<T1> | T1, PromiseLike<T2> | T2, PromiseLike<T3> | T3, PromiseLike<T4> | T4, PromiseLike<T5> | T5]> |
+    [PromiseLike<T1> | T1, PromiseLike<T2> | T2, PromiseLike<T3> | T3, PromiseLike<T4> | T4, PromiseLike<T5> | T5]
+  ): Bluebird<[T1, T2, T3, T4, T5]>;
+  static all<T1, T2, T3, T4>(values:
+    PromiseLike<[PromiseLike<T1> | T1, PromiseLike<T2> | T2, PromiseLike<T3> | T3, PromiseLike<T4> | T4]> |
+    [PromiseLike<T1> | T1, PromiseLike<T2> | T2, PromiseLike<T3> | T3, PromiseLike<T4> | T4]
+  ): Bluebird<[T1, T2, T3, T4]>;
+  static all<T1, T2, T3>(values:
+    PromiseLike<[PromiseLike<T1> | T1, PromiseLike<T2> | T2, PromiseLike<T3> | T3]> |
+    [PromiseLike<T1> | T1, PromiseLike<T2> | T2, PromiseLike<T3> | T3]
+  ): Bluebird<[T1, T2, T3]>;
+  static all<T1, T2>(values:
+    PromiseLike<[PromiseLike<T1> | T1, PromiseLike<T2> | T2]> |
+    [PromiseLike<T1> | T1, PromiseLike<T2> | T2]
+  ): Bluebird<[T1, T2]>;
+  static all<T1>(values:
+    PromiseLike<[PromiseLike<T1> | T1]> |
+    [PromiseLike<T1> | T1]
+  ): Bluebird<[T1]>;
   // array with values
   static all<R>(values: PromiseLike<Iterable<PromiseLike<R> | R>> | Iterable<PromiseLike<R> | R>): Bluebird<R[]>;
 
@@ -957,6 +1019,12 @@ declare namespace Bluebird {
   interface SpreadOption {
     spread: boolean;
   }
+  interface TrueSpreadOption {
+    spread: true;
+  }
+  interface FalseSpreadOption {
+    spread?: false;
+  }
   interface FromNodeOptions {
     multiArgs?: boolean;
   }
@@ -1057,15 +1125,17 @@ declare namespace Bluebird {
      *
      * If the the callback is called with multiple success values, the resolver fulfills its promise with an array of the values.
      */
-    // TODO specify resolver callback
-    callback(err: any,
-        value1: R extends [infer R1, any, any] ? R1 : never,
-        value2: R extends [any, infer R2, any] ? R2 : never,
-        value3: R extends [any, any, infer R3] ? R3 : never
+    callback<R1, R2, R3, R4, R5>(this: Resolver<[R1, R2, R3, R4, R5]>,
+      err: any, value1: R1, value2: R2, value3: R3, value4: R4, value5: R5
     ): void;
-    callback(err: any,
-        value1: R extends [infer R1, any] ? R1 : never,
-        value2: R extends [any, infer R2] ? R2 : never
+    callback<R1, R2, R3, R4>(this: Resolver<[R1, R2, R3, R4]>,
+      err: any, value1: R1, value2: R2, value3: R3, value4: R4
+    ): void;
+    callback<R1, R2, R3>(this: Resolver<[R1, R2, R3]>,
+      err: any, value1: R1, value2: R2, value3: R3
+    ): void;
+    callback<R1, R2>(this: Resolver<[R1, R2]>,
+      err: any, value1: R1, value2: R2
     ): void;
     callback(err: any, value: R): void;
   }
