@@ -90,52 +90,141 @@ export interface TediousType {
     type: string;
     name: string;
 }
+export interface TediousTypeBigInt extends TediousType { name: "BigInt" }
+export interface TediousTypeBinary extends TediousType { name: "Binary" }
+export interface TediousTypeBit extends TediousType { name: "Bit" }
+export interface TediousTypeBitN extends TediousType { name: "BitN" }
+export interface TediousTypeChar extends TediousType { name: "Char" }
+export interface TediousTypeDate extends TediousType { name: "Date" }
+export interface TediousTypeDateN extends TediousType { name: "DateN" }
+export interface TediousTypeDateTime2 extends TediousType { name: "DateTime2" }
+export interface TediousTypeDateTime2N extends TediousType { name: "DateTime2N" }
+export interface TediousTypeDateTime extends TediousType { name: "DateTime" }
+export interface TediousTypeDateTimeN extends TediousType { name: "DateTimeN" }
+export interface TediousTypeDateTimeOffset extends TediousType { name: "DateTimeOffset" }
+export interface TediousTypeDateTimeOffsetN extends TediousType { name: "DateTimeOffsetN" }
+export interface TediousTypeDecimal extends TediousType { name: "Decimal" }
+export interface TediousTypeDecimalN extends TediousType { name: "DecimalN" }
+export interface TediousTypeFloat extends TediousType { name: "Float" }
+export interface TediousTypeFloatN extends TediousType { name: "FloatN" }
+export interface TediousTypeImage extends TediousType { name: "Image" }
+export interface TediousTypeInt extends TediousType { name: "Int" }
+export interface TediousTypeIntN extends TediousType { name: "IntN" }
+export interface TediousTypeMoney extends TediousType { name: "Money" }
+export interface TediousTypeMoneyN extends TediousType { name: "MoneyN" }
+export interface TediousTypeNChar extends TediousType { name: "NChar" }
+export interface TediousTypeNText extends TediousType { name: "NText" }
+export interface TediousTypeNVarChar extends TediousType { name: "NVarChar" }
+export interface TediousTypeNull extends TediousType { name: "Null" }
+export interface TediousTypeNumeric extends TediousType { name: "Numeric" }
+export interface TediousTypeNumericN extends TediousType { name: "NumericN" }
+export interface TediousTypeReal extends TediousType { name: "Real" }
+export interface TediousTypeSmallDateTime extends TediousType { name: "SmallDateTime" }
+export interface TediousTypeSmallInt extends TediousType { name: "SmallInt" }
+export interface TediousTypeSmallMoney extends TediousType { name: "SmallMoney" }
+export interface TediousTypeTVP extends TediousType { name: "TVP" }
+export interface TediousTypeText extends TediousType { name: "Text" }
+export interface TediousTypeTime extends TediousType { name: "Time" }
+export interface TediousTypeTimeN extends TediousType { name: "TimeN" }
+export interface TediousTypeTinyInt extends TediousType { name: "TinyInt" }
+export interface TediousTypeUDT extends TediousType { name: "UDT" }
+export interface TediousTypeUniqueIdentifier extends TediousType { name: "UniqueIdentifier" }
+export interface TediousTypeUniqueIdentifierN extends TediousType { name: "UniqueIdentifierN" }
+export interface TediousTypeVarBinary extends TediousType { name: "VarBinary" }
+export interface TediousTypeVarChar extends TediousType { name: "VarChar" }
+export interface TediousTypeXml extends TediousType { name: "Xml" }
 
 export interface TediousTypes {
-    BigInt: TediousType;
-    Binary: TediousType;
-    Bit: TediousType;
-    BitN: TediousType;
-    Char: TediousType;
-    Date: TediousType;
-    DateN: TediousType;
-    DateTime2: TediousType;
-    DateTime2N: TediousType;
-    DateTime: TediousType;
-    DateTimeN: TediousType;
-    DateTimeOffset: TediousType;
-    DateTimeOffsetN: TediousType;
-    Decimal: TediousType;
-    DecimalN: TediousType;
-    Float: TediousType;
-    FloatN: TediousType;
-    Image: TediousType;
-    Int: TediousType;
-    IntN: TediousType;
-    Money: TediousType;
-    MoneyN: TediousType;
-    NChar: TediousType;
-    NText: TediousType;
-    NVarChar: TediousType;
-    Null: TediousType;
-    Numeric: TediousType;
-    NumericN: TediousType;
-    Real: TediousType;
-    SmallDateTime: TediousType;
-    SmallInt		: TediousType;
-    SmallMoney: TediousType;
-    TVP: TediousType;
-    Text: TediousType;
-    Time: TediousType;
-    TimeN: TediousType;
-    TinyInt: TediousType;
-    UDT: TediousType;
-    UniqueIdentifier: TediousType;
-    UniqueIdentifierN: TediousType;
-    VarBinary: TediousType;
-    VarChar: TediousType;
-    Xml: TediousType;
+    BigInt: TediousTypeBigInt;
+    Binary: TediousTypeBinary;
+    Bit: TediousTypeBit;
+    BitN: TediousTypeBitN;
+    Char: TediousTypeChar;
+    Date: TediousTypeDate;
+    DateN: TediousTypeDateN;
+    DateTime2: TediousTypeDateTime2;
+    DateTime2N: TediousTypeDateTime2N;
+    DateTime: TediousTypeDateTime;
+    DateTimeN: TediousTypeDateTimeN;
+    DateTimeOffset: TediousTypeDateTimeOffset;
+    DateTimeOffsetN: TediousTypeDateTimeOffsetN;
+    Decimal: TediousTypeDecimal;
+    DecimalN: TediousTypeDecimalN;
+    Float: TediousTypeFloat;
+    FloatN: TediousTypeFloatN;
+    Image: TediousTypeImage;
+    Int: TediousTypeInt;
+    IntN: TediousTypeIntN;
+    Money: TediousTypeMoney;
+    MoneyN: TediousTypeMoneyN;
+    NChar: TediousTypeNChar;
+    NText: TediousTypeNText;
+    NVarChar: TediousTypeNVarChar;
+    Null: TediousTypeNull;
+    Numeric: TediousTypeNumeric;
+    NumericN: TediousTypeNumericN;
+    Real: TediousTypeReal;
+    SmallDateTime: TediousTypeSmallDateTime;
+    SmallInt: TediousTypeSmallInt;
+    SmallMoney: TediousTypeSmallMoney;
+    TVP: TediousTypeTVP;
+    Text: TediousTypeText;
+    Time: TediousTypeTime;
+    TimeN: TediousTypeTimeN;
+    TinyInt: TediousTypeTinyInt;
+    UDT: TediousTypeUDT;
+    UniqueIdentifier: TediousTypeUniqueIdentifier;
+    UniqueIdentifierN: TediousTypeUniqueIdentifierN;
+    VarBinary: TediousTypeVarBinary;
+    VarChar: TediousTypeVarChar;
+    Xml: TediousTypeXml;
 }
+
+export type TediousTypeAll = {[K in keyof TediousTypes]: TediousTypes[K]}[keyof TediousTypes]
+export type TediousNumberType =
+    | TediousTypeBigInt
+    | TediousTypeDecimal
+    | TediousTypeFloat
+    | TediousTypeInt
+    | TediousTypeMoney
+    | TediousTypeNumeric
+    | TediousTypeReal
+    | TediousTypeSmallInt
+    | TediousTypeSmallMoney
+    | TediousTypeTinyInt
+export type TediousDateType =
+    | TediousTypeDate
+    | TediousTypeDateN
+    | TediousTypeDateTime
+    | TediousTypeDateTime2
+    | TediousTypeDateTime2N
+    | TediousTypeDateTimeOffset
+    | TediousTypeDateTimeOffsetN
+    | TediousTypeSmallDateTime
+    | TediousTypeTime
+    | TediousTypeTimeN
+export type TediousBinaryType =
+    | TediousTypeBinary
+    | TediousTypeImage
+    | TediousTypeVarBinary
+export type TediousBooleanType = TediousTypeBit
+export type TediousStringType =
+    | TediousTypeChar
+    | TediousTypeNChar
+    | TediousTypeNVarChar
+    | TediousTypeText
+    | TediousTypeUniqueIdentifier
+    | TediousTypeUniqueIdentifierN
+    | TediousTypeVarChar
+export type TediousTableType = TediousTypeTVP
+export type TediousAnyType = Exclude<TediousTypeAll,
+    | TediousNumberType
+    | TediousDateType
+    | TediousBinaryType
+    | TediousBooleanType
+    | TediousStringType
+    | TediousTableType
+>
 
 export declare var TYPES: TediousTypes;
 
@@ -298,7 +387,7 @@ export interface ConnectionConfig {
 
 export interface ParameterOptions {
     //  for VarChar, NVarChar, VarBinary
-    length?: number | 'max';
+    length?: number | "max";
     // precision for Numeric, Decimal
     precision?: number;
     // scale for Numeric, Decimal, Time, DateTime2, DateTimeOffset
@@ -341,7 +430,16 @@ export declare class Request extends events.EventEmitter {
      * @param value The value that the parameter is to be given. The Javascript type of the argument should match that documented for data types.
      * @param options Additional type options. Optional.
      */
-    addParameter(name: string, type: TediousType, value: any, options?: ParameterOptions): void;
+    addParameter(name: string, type: TediousNumberType, value: number | string | null | undefined, options?: ParameterOptions): void;
+    addParameter(name: string, type: TediousDateType, value: Date | string | null | undefined, options?: ParameterOptions): void;
+    addParameter(name: string, type: TediousBinaryType, value: Buffer | null | undefined, options?: ParameterOptions): void;
+    addParameter(name: string, type: TediousBooleanType, value: boolean | null | undefined, options?: ParameterOptions): void;
+    addParameter(name: string, type: TediousStringType, value: string | {toString(): string} | null | undefined, options?: ParameterOptions): void;
+    addParameter(name: string, type: TediousTableType, value: {
+        columns: ReadonlyArray<any>
+        rows: ReadonlyArray<any>
+    } | null | undefined, options?: ParameterOptions): void;
+    addParameter(name: string, type: TediousAnyType, value: any, options?: ParameterOptions): void;
 
     /**
      * Add an output parameter to the request. The parameter's value will be provide by an emitted returnValue event.

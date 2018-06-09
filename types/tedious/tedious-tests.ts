@@ -40,3 +40,7 @@ var connectionError = new tedious.ConnectionError();
 connectionError.message = 'test';
 connectionError.code = "ETIMEOUT";
 connectionError = new tedious.ConnectionError('test', "ETIMEOUT");
+
+var storedProc = new tedious.Request("p_SelectFoo", (error: Error, rowCount: number): void => {
+});
+storedProc.addParameter('IntParam', tedious.TYPES.Int, 1)
