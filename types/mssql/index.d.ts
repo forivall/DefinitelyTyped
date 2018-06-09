@@ -105,15 +105,17 @@ interface IMap extends Array<{ js: any, sql: any }> {
 
 export declare var map: IMap;
 
-export declare var DRIVERS: string[];
+export function getTypeByValue(value: any): ISqlTypeFactory
+
+export interface ISingleColumnMetadata {
+    index: number;
+    name: string;
+    length: number;
+    type: (() => ISqlType) | ISqlType;
+    udt?: any;
+}
 export interface IColumnMetadata {
-    [name: string]: {
-        index: number;
-        name: string;
-        length: number;
-        type: (() => ISqlType) | ISqlType;
-        udt?: any;
-    }
+    [name: string]: ISingleColumnMetadata
 }
 export interface IResult<T> {
     recordsets: IRecordSet<T>[];
@@ -183,6 +185,8 @@ export interface config {
     pool?: IPool;
 }
 
+export type ConnectionErrorListener = (err: ConnectionError) => void
+
 export declare class ConnectionPool extends events.EventEmitter {
     public connected: boolean;
     public connecting: boolean;
@@ -190,11 +194,18 @@ export declare class ConnectionPool extends events.EventEmitter {
     public constructor(config: config, callback?: (err?: any) => void);
     public constructor(connectionString: string, callback?: (err?: any) => void);
     public query(strings: TemplateStringsArray, ...interpolations: any[]): Promise<IResult<any>>;
-    public connect(): Promise<ConnectionPool>;
-    public connect(callback: (err: any) => void): void;
-    public close(): Promise<void>;
-    public close(callback: (err: any) => void): void;
+    public connect(): Promise<this>;
+    public connect(callback: (err: any) => void): this;
+    public close(): Promise<this>;
+    public close(callback: (err: any) => void): this;
     public request(): Request;
+
+    addListener(event: "error", listener: ConnectionErrorListener): this;
+    on(event: "error", listener: ConnectionErrorListener): this;
+    once(event: "error", listener: ConnectionErrorListener): this;
+    prependListener(event: "error", listener: ConnectionErrorListener): this;
+    prependOnceListener(event: "error", listener: ConnectionErrorListener): this;
+    listeners(event: "error"): ConnectionErrorListener[];
 }
 
 export declare class ConnectionError implements Error {
@@ -219,10 +230,11 @@ declare class columns extends Array {
     public add(name: string, type: (() => ISqlType) | ISqlType, options?: IColumnOptions): number;
 }
 
-type IRow = (string | number | boolean | Date | Buffer | undefined)[];
+type IReturnValue = string | number | boolean | Date | Buffer | undefined
+type IRow = IReturnValue[];
 
-declare class rows extends Array {
-    public add(...row: IRow): number;
+declare interface rows extends Array<any> {
+    add(...row: IRow): number;
 }
 
 export declare class Table {
@@ -244,6 +256,19 @@ interface IRequestParameters {
         tvpType: any;
     }
 }
+
+export type RequestErrorListener = (err: RequestError) => void
+export type ColumnMetadataListener = (columns: IColumnMetadata) => void
+export interface IColumnNamesRow {
+    [column: string]: IReturnValue
+}
+export type RowListener = (rows: IRow | IColumnNamesRow) => void
+export interface DoneResult {
+    rowsAffected: number[]
+    output?: { [key: string]: any }
+    returnValue?: any
+}
+export type DoneListener = (returnValue: DoneResult) => void
 
 export declare class Request extends events.EventEmitter {
     public transaction: Transaction;
@@ -273,6 +298,34 @@ export declare class Request extends events.EventEmitter {
     public bulk(table: Table): Promise<number>;
     public bulk(table: Table, callback: (err: Error, rowCount: any) => void): void;
     public cancel(): void;
+
+    addListener(event: "error", listener: RequestErrorListener): this;
+    on(event: "error", listener: RequestErrorListener): this;
+    once(event: "error", listener: RequestErrorListener): this;
+    prependListener(event: "error", listener: RequestErrorListener): this;
+    prependOnceListener(event: "error", listener: RequestErrorListener): this;
+    listeners(event: "error"): RequestErrorListener[];
+
+    addListener(event: "recordset", listener: ColumnMetadataListener): this;
+    on(event: "recordset", listener: ColumnMetadataListener): this;
+    once(event: "recordset", listener: ColumnMetadataListener): this;
+    prependListener(event: "recordset", listener: ColumnMetadataListener): this;
+    prependOnceListener(event: "recordset", listener: ColumnMetadataListener): this;
+    listeners(event: "recordset"): ColumnMetadataListener[];
+
+    addListener(event: "row", listener: RowListener): this;
+    on(event: "row", listener: RowListener): this;
+    once(event: "row", listener: RowListener): this;
+    prependListener(event: "row", listener: RowListener): this;
+    prependOnceListener(event: "row", listener: RowListener): this;
+    listeners(event: "row"): RowListener[];
+
+    addListener(event: "done", listener: DoneListener): this;
+    on(event: "done", listener: DoneListener): this;
+    once(event: "done", listener: DoneListener): this;
+    prependListener(event: "done", listener: DoneListener): this;
+    prependOnceListener(event: "done", listener: DoneListener): this;
+    listeners(event: "done"): DoneListener[];
 }
 
 export declare class RequestError implements Error {
@@ -291,6 +344,13 @@ export declare class Transaction extends events.EventEmitter {
     public commit(callback: (err?: any) => void): void;
     public rollback(): Promise<void>;
     public rollback(callback: (err?: any) => void): void;
+
+    addListener(event: "begin" | "commit" | "rollback", listener: () => void): this;
+    on(event: "begin" | "commit" | "rollback", listener: () => void): this;
+    once(event: "begin" | "commit" | "rollback", listener: () => void): this;
+    prependListener(event: "begin" | "commit" | "rollback", listener: () => void): this;
+    prependOnceListener(event: "begin" | "commit" | "rollback", listener: () => void): this;
+    listeners(event: "begin" | "commit" | "rollback"): (() => void)[];
 }
 
 export declare class TransactionError implements Error {
@@ -315,6 +375,7 @@ export declare class PreparedStatement extends events.EventEmitter {
     public execute(values: Object, callback: (err?: Error) => void): Request;
     public unprepare(): Promise<void>;
     public unprepare(callback: (err?: Error) => void): PreparedStatement;
+    public on(type: 'error')
 }
 
 export declare class PreparedStatementError implements Error {
@@ -323,3 +384,19 @@ export declare class PreparedStatementError implements Error {
     public message: string;
     public code: string;
 }
+
+export declare function connect(config: config, callback: (err: any) => void): ConnectionPool;
+export declare function connect(config: config): Promise<ConnectionPool>;
+export declare function close(callback: (err: any) => void): ConnectionPool;
+export declare function close(): Promise<ConnectionPool>;
+export declare function on(event: "error", listener: ConnectionErrorListener): ConnectionPool;
+export declare function on(event: string | symbol, listener: (...args: any[]) => void): ConnectionPool;
+export declare function removeListener(event: string | symbol, listener: (...args: any[]) => void): ConnectionPool;
+export declare function removeAllListeners(event?: string | symbol): ConnectionPool;
+export declare function query(command: string): Promise<IResult<any>>;
+export declare function query<Entity>(command: string): Promise<IResult<Entity>>;
+export declare function query<Entity>(command: string, callback: (err?: Error, recordset?: IResult<Entity>) => void): void;
+export declare function batch(batch: string): Promise<IResult<any>>;
+export declare function batch<Entity>(batch: string): Promise<IResult<Entity>>;
+export declare function batch(batch: string, callback: (err?: Error, recordset?: IResult<any>) => void): void;
+export declare function batch<Entity>(batch: string, callback: (err?: any, recordset?: IResult<Entity>) => void): void;
