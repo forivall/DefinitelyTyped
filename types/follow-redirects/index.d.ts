@@ -8,40 +8,40 @@
 
 import * as coreHttp from 'http';
 import * as coreHttps from 'https';
-import {Writable} from 'stream';
+import { Writable } from 'stream';
 
-interface WrappableRequest {
-    getHeader?(...args: any[]): any
+export interface WrappableRequest {
+    getHeader?(...args: any[]): any;
     setHeader(...args: any[]): any;
-    removeHeader(...args: any[]): any
+    removeHeader(...args: any[]): any;
 
-    abort?(...args: any[]): any
-    flushHeaders?(...args: any[]): any
-    setNoDelay?(...args: any[]): any
-    setSocketKeepAlive?(...args: any[]): any
-    setTimeout?(...args: any[]): any
+    abort?(...args: any[]): any;
+    flushHeaders?(...args: any[]): any;
+    setNoDelay?(...args: any[]): any;
+    setSocketKeepAlive?(...args: any[]): any;
+    setTimeout?(...args: any[]): any;
 }
-interface WrappableResponse {
-    statusCode?: number
+export interface WrappableResponse {
+    statusCode?: number;
     headers: {
         location?: string
-    }
-    destroy(): any
+    };
+    destroy(): any;
 }
 
 export interface Scheme<Options, Request extends WrappableRequest, Response> {
     request(options: Options, callback?: (res: Response) => any): Request;
 }
 
-interface RedirectableRequest<Request extends WrappableRequest, Response> extends Writable {
-    setHeader: Request['setHeader']
-    removeHeader: Request['removeHeader']
-    abort: Request['abort']
-    flushHeaders: Request['flushHeaders']
-    getHeader: Request['getHeader']
-    setNoDelay: Request['setNoDelay']
-    setSocketKeepAlive: Request['setSocketKeepAlive']
-    setTimeout: Request['setTimeout']
+export interface RedirectableRequest<Request extends WrappableRequest, Response> extends Writable {
+    setHeader: Request['setHeader'];
+    removeHeader: Request['removeHeader'];
+    abort: Request['abort'];
+    flushHeaders: Request['flushHeaders'];
+    getHeader: Request['getHeader'];
+    setNoDelay: Request['setNoDelay'];
+    setSocketKeepAlive: Request['setSocketKeepAlive'];
+    setTimeout: Request['setTimeout'];
 
     addListener(event: string, listener: (...args: any[]) => void): this;
     addListener(event: "response", listener: (response: Response) => void): this;
@@ -66,36 +66,34 @@ interface RedirectableRequest<Request extends WrappableRequest, Response> extend
     prependOnceListener(event: string, listener: (...args: any[]) => void): this;
     prependOnceListener(event: "response", listener: (response: Response) => void): this;
     prependOnceListener(event: "error", listener: (err: Error) => void): this;
-
 }
 
-
-export type RedirectScheme<Options, Request extends WrappableRequest, Response> = {
+export interface RedirectScheme<Options, Request extends WrappableRequest, Response> {
     request(
         options: string | Options & FollowOptions,
         callback?: (res: Response & FollowResponse) => void
-    ): RedirectableRequest<Request, Response>
+    ): RedirectableRequest<Request, Response>;
     get(
         options: string | Options & FollowOptions,
         callback?: (res: Response & FollowResponse) => void
-    ): RedirectableRequest<Request, Response>
-};
+    ): RedirectableRequest<Request, Response>;
+}
 
-export type Override<T, U> = Pick<T, Exclude<keyof T, keyof U>> & U
+export type Override<T, U> = Pick<T, Exclude<keyof T, keyof U>> & U;
 export interface FollowOptions {
     maxRedirects?: number;
     maxBodyLength?: number;
 }
 
 export interface FollowResponse {
-    responseUrl: string
-    redirects: Redirect[]
+    responseUrl: string;
+    redirects: Redirect[];
 }
 
 export interface Redirect {
-    url: string
-    headers: coreHttp.IncomingHttpHeaders
-    statusCode: number
+    url: string;
+    headers: coreHttp.IncomingHttpHeaders;
+    statusCode: number;
 }
 
 export const http: Override<typeof coreHttp, RedirectScheme<
@@ -113,7 +111,7 @@ export type WrappedScheme<T extends Scheme<any, any, any>> = Override<T, Redirec
     T extends Scheme<infer Options, any, any> ? Options : never,
     T extends Scheme<any, infer Request, any> ? Request : never,
     T extends Scheme<any, any, infer Response> ? Response : never
->>
+>>;
 
 export function wrap<T extends {[key: string]: Scheme<any, any, any>}>(protocols: T): {
     [K in keyof T]: WrappedScheme<T[K]>
