@@ -27,29 +27,29 @@ declare namespace yargs {
         (): Arguments;
         (args: string[], cwd?: string): Arguments;
 
-        alias(shortName: string | string[], longName: string | string[]): Argv;
-        alias(aliases: { [shortName: string]: string | string[] }): Argv;
+        alias(shortName: string | ReadonlyArray<string>, longName: string | ReadonlyArray<string>): Argv;
+        alias(aliases: { [shortName: string]: string | ReadonlyArray<string> }): Argv;
 
         argv: Arguments;
 
-        array(key: string | string[]): Argv;
+        array(key: string | ReadonlyArray<string>): Argv;
 
-        boolean(key: string | string[]): Argv;
+        boolean(key: string | ReadonlyArray<string>): Argv;
 
         check(func: (argv: Arguments, aliases: { [alias: string]: string }) => any, global?: boolean): Argv;
 
         choices(key: string, values: Choices): Argv;
         choices(choices: { [argName: string]: Choices }): Argv;
 
-        coerce(key: string | string[], func: (arg: any) => any): Argv;
+        coerce(key: string | ReadonlyArray<string>, func: (arg: any) => any): Argv;
         coerce(opts: { [key: string]: (arg: any) => any; }): Argv;
 
-        command(command: string | string[], description: string, builder?: (args: Argv) => Argv, handler?: (args: Arguments) => void): Argv;
-        command(command: string | string[], description: string, builder?: { [key: string]: Options }, handler?: (args: Arguments) => void): Argv;
-        command(command: string | string[], description: string, module: CommandModule): Argv;
-        command(command: string | string[], showInHelp: false, builder?: (args: Argv) => Argv, handler?: (args: Arguments) => void): Argv;
-        command(command: string | string[], showInHelp: false, builder?: { [key: string]: Options }, handler?: (args: Arguments) => void): Argv;
-        command(command: string | string[], showInHelp: false, module: CommandModule): Argv;
+        command(command: string | ReadonlyArray<string>, description: string, builder?: (args: Argv) => Argv, handler?: (args: Arguments) => void): Argv;
+        command(command: string | ReadonlyArray<string>, description: string, builder?: { [key: string]: Options }, handler?: (args: Arguments) => void): Argv;
+        command(command: string | ReadonlyArray<string>, description: string, module: CommandModule): Argv;
+        command(command: string | ReadonlyArray<string>, showInHelp: false, builder?: (args: Argv) => Argv, handler?: (args: Arguments) => void): Argv;
+        command(command: string | ReadonlyArray<string>, showInHelp: false, builder?: { [key: string]: Options }, handler?: (args: Arguments) => void): Argv;
+        command(command: string | ReadonlyArray<string>, showInHelp: false, module: CommandModule): Argv;
         command(module: CommandModule): Argv;
 
         // Advanced API
@@ -62,14 +62,14 @@ declare namespace yargs {
         completion(cmd: string, description?: string, func?: SyncCompletionFunction): Argv;
 
         config(): Argv;
-        config(key: string | string[], description?: string, parseFn?: (configPath: string) => object): Argv;
-        config(key: string | string[], parseFn: (configPath: string) => object): Argv;
+        config(key: string | ReadonlyArray<string>, description?: string, parseFn?: (configPath: string) => object): Argv;
+        config(key: string | ReadonlyArray<string>, parseFn: (configPath: string) => object): Argv;
         config(explicitConfigurationObject: object): Argv;
 
-        conflicts(key: string, value: string | string[]): Argv;
-        conflicts(conflicts: { [key: string]: string | string[] }): Argv;
+        conflicts(key: string, value: string | ReadonlyArray<string>): Argv;
+        conflicts(conflicts: { [key: string]: string | ReadonlyArray<string> }): Argv;
 
-        count(key: string | string[]): Argv;
+        count(key: string | ReadonlyArray<string>): Argv;
 
         default(key: string, value: any, description?: string): Argv;
         default(defaults: { [key: string]: any }, description?: string): Argv;
@@ -78,20 +78,20 @@ declare namespace yargs {
          * @deprecated since version 6.6.0
          * Use '.demandCommand()' or '.demandOption()' instead
          */
-        demand(key: string | string[], msg: string): Argv;
-        demand(key: string | string[], required?: boolean): Argv;
+        demand(key: string | ReadonlyArray<string>, msg: string): Argv;
+        demand(key: string | ReadonlyArray<string>, required?: boolean): Argv;
         demand(positionals: number, msg: string): Argv;
         demand(positionals: number, required?: boolean): Argv;
         demand(positionals: number, max: number, msg?: string): Argv;
 
-        demandOption(key: string | string[], msg?: string): Argv;
-        demandOption(key: string | string[], demand?: boolean): Argv;
+        demandOption(key: string | ReadonlyArray<string>, msg?: string): Argv;
+        demandOption(key: string | ReadonlyArray<string>, demand?: boolean): Argv;
 
         demandCommand(): Argv;
         demandCommand(min: number, minMsg?: string): Argv;
         demandCommand(min: number, max?: number, minMsg?: string, maxMsg?: string): Argv;
 
-        describe(key: string | string[], description: string): Argv;
+        describe(key: string | ReadonlyArray<string>, description: string): Argv;
         describe(descriptions: { [key: string]: string }): Argv;
 
         detectLocale(detect: boolean): Argv;
@@ -110,11 +110,11 @@ declare namespace yargs {
 
         fail(func: (msg: string, err: Error) => any): Argv;
 
-        getCompletion(args: string[], done: (completions: string[]) => void): Argv;
+        getCompletion(args: ReadonlyArray<string>, done: (completions: ReadonlyArray<string>) => void): Argv;
 
-        global(key: string | string[]): Argv;
+        global(key: string | ReadonlyArray<string>): Argv;
 
-        group(key: string | string[], groupName: string): Argv;
+        group(key: string | ReadonlyArray<string>, groupName: string): Argv;
 
         hide(key: string): Argv;
 
@@ -123,8 +123,8 @@ declare namespace yargs {
         help(option: string, enableExplicit: boolean): Argv;
         help(option: string, description?: string, enableExplicit?: boolean): Argv;
 
-        implies(key: string, value: string | string[]): Argv;
-        implies(implies: { [key: string]: string | string[] }): Argv;
+        implies(key: string, value: string | ReadonlyArray<string>): Argv;
+        implies(implies: { [key: string]: string | ReadonlyArray<string> }): Argv;
 
         locale(): string;
         locale(loc: string): Argv;
@@ -132,9 +132,9 @@ declare namespace yargs {
         nargs(key: string, count: number): Argv;
         nargs(nargs: { [key: string]: number }): Argv;
 
-        normalize(key: string | string[]): Argv;
+        normalize(key: string | ReadonlyArray<string>): Argv;
 
-        number(key: string | string[]): Argv;
+        number(key: string | ReadonlyArray<string>): Argv;
 
         option(key: string, options: Options): Argv;
         option(options: { [key: string]: Options }): Argv;
@@ -143,9 +143,9 @@ declare namespace yargs {
         options(options: { [key: string]: Options }): Argv;
 
         parse(): Arguments;
-        parse(arg: string | string[], context?: object, parseCallback?: ParseCallback): Arguments;
+        parse(arg: string | ReadonlyArray<string>, context?: object, parseCallback?: ParseCallback): Arguments;
 
-        pkgConf(key: string | string[], cwd?: string): Argv;
+        pkgConf(key: string | ReadonlyArray<string>, cwd?: string): Argv;
 
         /**
          * 'positional' should be called in a command's builder function, and is not
@@ -177,7 +177,7 @@ declare namespace yargs {
         required(positionals: number, required: boolean): Argv;
         required(positionals: number, msg: string): Argv;
 
-        requiresArg(key: string | string[]): Argv;
+        requiresArg(key: string | ReadonlyArray<string>): Argv;
 
         /**
          * @deprecated since version 6.6.0
@@ -196,11 +196,11 @@ declare namespace yargs {
 
         showHelpOnFail(enable: boolean, message?: string): Argv;
 
-        skipValidation(key: string | string[]): Argv;
+        skipValidation(key: string | ReadonlyArray<string>): Argv;
 
         strict(): Argv;
 
-        string(key: string | string[]): Argv;
+        string(key: string | ReadonlyArray<string>): Argv;
 
         // Intended to be used with '.wrap()'
         terminalWidth(): number;
@@ -210,10 +210,10 @@ declare namespace yargs {
         updateStrings(obj: { [key: string]: string }): Argv;
 
         usage(message: string): Argv;
-        usage(command: string | string[], description: string, builder?: (args: Argv) => Argv, handler?: (args: Arguments) => void): Argv;
-        usage(command: string | string[], showInHelp: boolean, builder?: (args: Argv) => Argv, handler?: (args: Arguments) => void): Argv;
-        usage(command: string | string[], description: string, builder?: { [key: string]: Options }, handler?: (args: Arguments) => void): Argv;
-        usage(commands: string | string[], showInHelp: boolean, builder?: { [key: string]: Options }, handler?: (args: Arguments) => void): Argv;
+        usage(command: string | ReadonlyArray<string>, description: string, builder?: (args: Argv) => Argv, handler?: (args: Arguments) => void): Argv;
+        usage(command: string | ReadonlyArray<string>, showInHelp: boolean, builder?: (args: Argv) => Argv, handler?: (args: Arguments) => void): Argv;
+        usage(command: string | ReadonlyArray<string>, description: string, builder?: { [key: string]: Options }, handler?: (args: Arguments) => void): Argv;
+        usage(commands: string | ReadonlyArray<string>, showInHelp: boolean, builder?: { [key: string]: Options }, handler?: (args: Arguments) => void): Argv;
 
         version(): Argv;
         version(version: string): Argv;
@@ -235,21 +235,21 @@ declare namespace yargs {
 
     interface RequireDirectoryOptions {
         recurse?: boolean;
-        extensions?: string[];
+        extensions?: ReadonlyArray<string>;
         visit?: (commandObject: any, pathToFile?: string, filename?: string) => any;
         include?: RegExp | ((pathToFile: string) => boolean);
         exclude?: RegExp | ((pathToFile: string) => boolean);
     }
 
     interface Options {
-        alias?: string | string[];
+        alias?: string | ReadonlyArray<string>;
         array?: boolean;
         boolean?: boolean;
         choices?: Choices;
         coerce?: (arg: any) => any;
         config?: boolean;
         configParser?: (configPath: string) => object;
-        conflicts?: string | string[] | { [key: string]: string | string[] };
+        conflicts?: string | ReadonlyArray<string> | { [key: string]: string | ReadonlyArray<string> };
         count?: boolean;
         default?: any;
         defaultDescription?: string;
@@ -265,7 +265,7 @@ declare namespace yargs {
         global?: boolean;
         group?: string;
         hidden?: boolean;
-        implies?: string | string[] | { [key: string]: string | string[] };
+        implies?: string | ReadonlyArray<string> | { [key: string]: string | ReadonlyArray<string> };
         nargs?: number;
         normalize?: boolean;
         number?: boolean;
@@ -286,31 +286,31 @@ declare namespace yargs {
     }
 
     interface PositionalOptions {
-        alias?: string | string[];
+        alias?: string | ReadonlyArray<string>;
         choices?: Choices;
         coerce?: (arg: any) => any;
-        conflicts?: string | string[] | { [key: string]: string | string[] };
+        conflicts?: string | ReadonlyArray<string> | { [key: string]: string | ReadonlyArray<string> };
         default?: any;
         desc?: string;
         describe?: string;
         description?: string;
-        implies?: string | string[] | { [key: string]: string | string[] };
+        implies?: string | ReadonlyArray<string> | { [key: string]: string | ReadonlyArray<string> };
         normalize?: boolean;
         type?: PositionalOptionsType;
     }
 
     interface CommandModule {
-        aliases?: string[] | string;
+        aliases?: ReadonlyArray<string> | string;
         builder?: CommandBuilder;
-        command?: string[] | string;
+        command?: ReadonlyArray<string> | string;
         describe?: string | false;
         handler: (args: any) => void;
     }
 
     type ParseCallback = (err: Error | undefined, argv: Arguments, output: string) => void;
     type CommandBuilder = { [key: string]: Options } | ((args: Argv) => Argv);
-    type SyncCompletionFunction = (current: string, argv: any) => string[];
-    type AsyncCompletionFunction = (current: string, argv: any, done: (completion: string[]) => void) => void;
+    type SyncCompletionFunction = (current: string, argv: any) => ReadonlyArray<string>;
+    type AsyncCompletionFunction = (current: string, argv: any, done: (completion: ReadonlyArray<string>) => void) => void;
     type Choices = Array<string | true | undefined>;
     type PositionalOptionsType = "boolean" | "number" | "string";
 }
