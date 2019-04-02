@@ -21,6 +21,6 @@ declare function eos(
   callback?: Callback
 ): () => void;
 declare namespace eos {
-    export function __promisify__(stream: Stream, options?: Options): Promise<void>
+  function __promisify__(stream: Stream, options?: Options): Promise<void>;
 }
 export = eos;
