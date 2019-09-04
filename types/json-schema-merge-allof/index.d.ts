@@ -2,6 +2,7 @@
 // Project: https://github.com/mokkabonna/json-schema-merge-allof#readme
 // Definitions by: Emily Marigold Klassen <https://github.com/forivall>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
+// TypeScript Version: 2.8
 
 import { JSONSchema4, JSONSchema6, JSONSchema7 } from 'json-schema';
 
@@ -19,7 +20,7 @@ declare namespace merger {
         ignoreAdditionalProperties?: boolean;
         resolvers?: Partial<Resolvers<Schema>> & {
             defaultResolver?(
-                values: ReadonlyArray<unknown>,
+                values: ReadonlyArray<any>,
                 path: string[],
                 mergeSchemas: MergeSchemas,
                 options: Options,
@@ -68,11 +69,11 @@ declare namespace merger {
             | 'title'
             | 'type'
             | 'uniqueItems']: (
-            values: ReadonlyArray<Schema[K]>,
+            values: ReadonlyArray<Schema[Extract<K, keyof Schema>]>,
             path: string[],
             mergeSchemas: MergeSchemas,
             options: Options,
-        ) => Schema[K];
+        ) => Schema[Extract<K, keyof Schema>];
     };
     interface Resolvers<Schema extends JSONSchema = JSONSchema> extends BasicResolvers<Schema> {
         (
