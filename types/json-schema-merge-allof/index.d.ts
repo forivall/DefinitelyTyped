@@ -74,11 +74,11 @@ declare namespace merger {
             | 'title'
             | 'type'
             | 'uniqueItems']: (
-            values: Schema[Extract<K, keyof Schema>][],
+            values: Extract<Schema, {[K_ in K]?: any}>[K][],
             path: string[],
             mergeSchemas: MergeSchemas,
             options: Options,
-        ) => Schema[Extract<K, keyof Schema>];
+        ) => Extract<Schema, {[K_ in K]?: any}>[K];
     };
     interface Resolvers<Schema extends JSONSchema = JSONSchema> extends BasicResolvers<Schema> {
         properties(
