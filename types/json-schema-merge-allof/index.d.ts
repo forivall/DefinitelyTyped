@@ -20,7 +20,7 @@ declare namespace merger {
         ignoreAdditionalProperties?: boolean;
         resolvers?: Partial<Resolvers<Schema>> & {
             defaultResolver?(
-                values: ReadonlyArray<any>,
+                values: any[],
                 path: string[],
                 mergeSchemas: MergeSchemas,
                 options: Options,
@@ -28,10 +28,16 @@ declare namespace merger {
         };
     }
     interface MergeSchemas {
-        (schemas: JSONSchema4[]): JSONSchema4;
-        (schemas: JSONSchema6[]): JSONSchema6;
-        (schemas: JSONSchema7[]): JSONSchema7;
-        (schemas: JSONSchema[]): JSONSchema;
+        (schemas: ReadonlyArray<JSONSchema4>): JSONSchema4;
+        (schemas: ReadonlyArray<JSONSchema6>): JSONSchema6;
+        (schemas: ReadonlyArray<JSONSchema7>): JSONSchema7;
+        (schemas: ReadonlyArray<JSONSchema>): JSONSchema;
+    }
+    interface MergeChildSchemas {
+        (schemas: ReadonlyArray<JSONSchema4>, childSchemaName: string): JSONSchema4;
+        (schemas: ReadonlyArray<JSONSchema6>, childSchemaName: string): JSONSchema6;
+        (schemas: ReadonlyArray<JSONSchema7>, childSchemaName: string): JSONSchema7;
+        (schemas: ReadonlyArray<JSONSchema>, childSchemaName: string): JSONSchema;
     }
     type BasicResolvers<Schema extends JSONSchema> = {
         [K in
@@ -63,26 +69,25 @@ declare namespace merger {
             | 'not'
             | 'oneOf'
             | 'pattern'
-            | 'properties'
             | 'propertyNames'
             | 'required'
             | 'title'
             | 'type'
             | 'uniqueItems']: (
-            values: ReadonlyArray<Schema[Extract<K, keyof Schema>]>,
+            values: Schema[Extract<K, keyof Schema>][],
             path: string[],
             mergeSchemas: MergeSchemas,
             options: Options,
         ) => Schema[Extract<K, keyof Schema>];
     };
     interface Resolvers<Schema extends JSONSchema = JSONSchema> extends BasicResolvers<Schema> {
-        (
+        properties(
             values: Schema[],
             path: string[],
             mergers: {
-                properties(schemas: Schema[], childSchemaName: string): Schema;
-                patternProperties(schemas: Schema[], childSchemaName: string): Schema;
-                additionalProperties(schemas: Schema[]): Schema;
+                properties: MergeChildSchemas;
+                patternProperties: MergeChildSchemas;
+                additionalProperties: MergeSchemas;
             },
             options: Options,
         ): Schema;
