@@ -23,7 +23,7 @@ declare global {
 declare function locale(
     supported?: string | ReadonlyArray<string | locale.Locale> | locale.Locales,
     def?: string,
-): (req: object, res: any, next: () => void) => void;
+): (req: { headers: { 'accept-language'?: string } }, res: any, next: () => void) => void;
 
 declare namespace locale {
     class Locale {
