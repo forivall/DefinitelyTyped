@@ -363,7 +363,7 @@ declare namespace jest {
          * @param fn The function for your test
          * @param timeout The timeout for an async function test
          */
-        (name: string, fn?: ProvidesCallback, timeout?: number): void;
+        (name: string, fn: ProvidesCallback, timeout?: number): void;
         /**
          * Only runs this test in the current file.
          */
@@ -375,7 +375,7 @@ declare namespace jest {
         /**
          * Sketch out which tests to write in the future.
          */
-        todo: It;
+        todo(name: string): void;
         /**
          * Experimental and should be avoided.
          */
