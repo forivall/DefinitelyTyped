@@ -43,7 +43,7 @@ declare namespace yargs {
      * For the return type / `argv` property, we create a mapped type over
      * `Arguments<T>` to simplify the inferred type signature in client code.
      */
-    interface Argv<T = {}> {
+    interface Argv<T = {}> extends ArgvCoreSimples<T, Argv<T>> {
         (): Arguments<WithCamelCaseKeys<T>>;
         (args: ReadonlyArray<string>, cwd?: string): Argv<T>;
 
@@ -91,14 +91,6 @@ declare namespace yargs {
          */
         boolean<K extends keyof T>(key: K | ReadonlyArray<K>): Argv<Omit<T, K> & { [key in K]: boolean | undefined }>;
         boolean<K extends string>(key: K | ReadonlyArray<K>): Argv<T & { [key in K]: boolean | undefined }>;
-
-        /**
-         * Check that certain conditions are met in the provided arguments.
-         * @param func Called with two arguments, the parsed `argv` hash and an array of options and their aliases.
-         * If `func` throws or returns a non-truthy value, show the thrown error, usage information, and exit.
-         * @param global Indicates whether `check()` should be enabled both at the top-level and for each sub-command.
-         */
-        check(func: (argv: Arguments<T>, aliases: { [alias: string]: string }) => any, global?: boolean): Argv<T>;
 
         /**
          * Limit valid values for key to a predefined set of choices, given as an array or as an individual value.
@@ -178,51 +170,6 @@ declare namespace yargs {
         command<U>(command: string | ReadonlyArray<string>, showInHelp: false, module: CommandModule<T, U>): Argv<U>;
         command<U>(module: CommandModule<T, U>): Argv<U>;
 
-        // Advanced API
-        /** Apply command modules from a directory relative to the module calling this method. */
-        commandDir(dir: string, opts?: RequireDirectoryOptions): Argv<T>;
-
-        /**
-         * Enable bash/zsh-completion shortcuts for commands and options.
-         *
-         * If invoked without parameters, `.completion()` will make completion the command to output the completion script.
-         *
-         * @param [cmd] When present in `argv._`, will result in the `.bashrc` or `.zshrc` completion script being outputted.
-         * To enable bash/zsh completions, concat the generated script to your `.bashrc` or `.bash_profile` (or `.zshrc` for zsh).
-         * @param [description] Provide a description in your usage instructions for the command that generates the completion scripts.
-         * @param [func] Rather than relying on yargs' default completion functionality, which shiver me timbers is pretty awesome, you can provide your own completion method.
-         */
-        completion(): Argv<T>;
-        completion(cmd: string, func?: AsyncCompletionFunction): Argv<T>;
-        completion(cmd: string, func?: SyncCompletionFunction): Argv<T>;
-        completion(cmd: string, func?: PromiseCompletionFunction): Argv<T>;
-        completion(cmd: string, description?: string | false, func?: AsyncCompletionFunction): Argv<T>;
-        completion(cmd: string, description?: string | false, func?: SyncCompletionFunction): Argv<T>;
-        completion(cmd: string, description?: string | false, func?: PromiseCompletionFunction): Argv<T>;
-
-        /**
-         * Tells the parser that if the option specified by `key` is passed in, it should be interpreted as a path to a JSON config file.
-         * The file is loaded and parsed, and its properties are set as arguments.
-         * Because the file is loaded using Node's require(), the filename MUST end in `.json` to be interpreted correctly.
-         *
-         * If invoked without parameters, `.config()` will make --config the option to pass the JSON config file.
-         *
-         * @param [description] Provided to customize the config (`key`) option in the usage string.
-         * @param [explicitConfigurationObject] An explicit configuration `object`
-         */
-        config(): Argv<T>;
-        config(key: string | ReadonlyArray<string>, description?: string, parseFn?: (configPath: string) => object): Argv<T>;
-        config(key: string | ReadonlyArray<string>, parseFn: (configPath: string) => object): Argv<T>;
-        config(explicitConfigurationObject: object): Argv<T>;
-
-        /**
-         * Given the key `x` is set, the key `y` must not be set. `y` can either be a single string or an array of argument names that `x` conflicts with.
-         *
-         * Optionally `.conflicts()` can accept an object specifying multiple conflicting keys.
-         */
-        conflicts(key: string, value: string | ReadonlyArray<string>): Argv<T>;
-        conflicts(conflicts: { [key: string]: string | ReadonlyArray<string> }): Argv<T>;
-
         /**
          * Interpret `key` as a boolean flag, but set its parsed value to the number of flag occurrences rather than `true` or `false`. Default value is thus `0`.
          */
@@ -263,150 +210,6 @@ declare namespace yargs {
         demandOption<K extends string>(key: K | ReadonlyArray<K>, msg?: string | true): Argv<T & { [key in K]: unknown }>;
         demandOption(key: string | ReadonlyArray<string>, demand?: boolean): Argv<T>;
 
-        /**
-         * Demand in context of commands.
-         * You can demand a minimum and a maximum number a user can have within your program, as well as provide corresponding error messages if either of the demands is not met.
-         */
-        demandCommand(): Argv<T>;
-        demandCommand(min: number, minMsg?: string): Argv<T>;
-        demandCommand(min: number, max?: number, minMsg?: string, maxMsg?: string): Argv<T>;
-
-        /**
-         * Shows a [deprecated] notice in front of the option
-         */
-        deprecateOption(option: string, msg?: string): Argv<T>;
-
-        /**
-         * Describe a `key` for the generated usage information.
-         *
-         * Optionally `.describe()` can take an object that maps keys to descriptions.
-         */
-        describe(key: string | ReadonlyArray<string>, description: string): Argv<T>;
-        describe(descriptions: { [key: string]: string }): Argv<T>;
-
-        /** Should yargs attempt to detect the os' locale? Defaults to `true`. */
-        detectLocale(detect: boolean): Argv<T>;
-
-        /**
-         * Tell yargs to parse environment variables matching the given prefix and apply them to argv as though they were command line arguments.
-         *
-         * Use the "__" separator in the environment variable to indicate nested options. (e.g. prefix_nested__foo => nested.foo)
-         *
-         * If this method is called with no argument or with an empty string or with true, then all env vars will be applied to argv.
-         *
-         * Program arguments are defined in this order of precedence:
-         * 1. Command line args
-         * 2. Env vars
-         * 3. Config file/objects
-         * 4. Configured defaults
-         *
-         * Env var parsing is disabled by default, but you can also explicitly disable it by calling `.env(false)`, e.g. if you need to undo previous configuration.
-         */
-        env(): Argv<T>;
-        env(prefix: string): Argv<T>;
-        env(enable: boolean): Argv<T>;
-
-        /** A message to print at the end of the usage instructions */
-        epilog(msg: string): Argv<T>;
-        /** A message to print at the end of the usage instructions */
-        epilogue(msg: string): Argv<T>;
-
-        /**
-         * Give some example invocations of your program.
-         * Inside `cmd`, the string `$0` will get interpolated to the current script name or node command for the present script similar to how `$0` works in bash or perl.
-         * Examples will be printed out as part of the help message.
-         */
-        example(command: string, description: string): Argv<T>;
-        example(command: ReadonlyArray<[string, string?]>): Argv<T>;
-
-        /** Manually indicate that the program should exit, and provide context about why we wanted to exit. Follows the behavior set by `.exitProcess().` */
-        exit(code: number, err: Error): void;
-
-        /**
-         * By default, yargs exits the process when the user passes a help flag, the user uses the `.version` functionality, validation fails, or the command handler fails.
-         * Calling `.exitProcess(false)` disables this behavior, enabling further actions after yargs have been validated.
-         */
-        exitProcess(enabled: boolean): Argv<T>;
-
-        /**
-         * Method to execute when a failure occurs, rather than printing the failure message.
-         * @param func Is called with the failure message that would have been printed, the Error instance originally thrown and yargs state when the failure occurred.
-         */
-        fail(func: (msg: string, err: Error, yargs: Argv<T>) => any): Argv<T>;
-
-        /**
-         * Allows to programmatically get completion choices for any line.
-         * @param args An array of the words in the command line to complete.
-         * @param done The callback to be called with the resulting completions.
-         */
-        getCompletion(args: ReadonlyArray<string>, done: (completions: ReadonlyArray<string>) => void): Argv<T>;
-
-        /**
-         * Indicate that an option (or group of options) should not be reset when a command is executed
-         *
-         * Options default to being global.
-         */
-        global(key: string | ReadonlyArray<string>): Argv<T>;
-
-        /** Given a key, or an array of keys, places options under an alternative heading when displaying usage instructions */
-        group(key: string | ReadonlyArray<string>, groupName: string): Argv<T>;
-
-        /** Hides a key from the generated usage information. Unless a `--show-hidden` option is also passed with `--help` (see `showHidden()`). */
-        hide(key: string): Argv<T>;
-
-        /**
-         * Configure an (e.g. `--help`) and implicit command that displays the usage string and exits the process.
-         * By default yargs enables help on the `--help` option.
-         *
-         * Note that any multi-char aliases (e.g. `help`) used for the help option will also be used for the implicit command.
-         * If there are no multi-char aliases (e.g. `h`), then all single-char aliases will be used for the command.
-         *
-         * If invoked without parameters, `.help()` will use `--help` as the option and help as the implicit command to trigger help output.
-         *
-         * @param [description] Customizes the description of the help option in the usage string.
-         * @param [enableExplicit] If `false` is provided, it will disable --help.
-         */
-        help(): Argv<T>;
-        help(enableExplicit: boolean): Argv<T>;
-        help(option: string, enableExplicit: boolean): Argv<T>;
-        help(option: string, description?: string, enableExplicit?: boolean): Argv<T>;
-
-        /**
-         * Given the key `x` is set, it is required that the key `y` is set.
-         * y` can either be the name of an argument to imply, a number indicating the position of an argument or an array of multiple implications to associate with `x`.
-         *
-         * Optionally `.implies()` can accept an object specifying multiple implications.
-         */
-        implies(key: string, value: string | ReadonlyArray<string>): Argv<T>;
-        implies(implies: { [key: string]: string | ReadonlyArray<string> }): Argv<T>;
-
-        /**
-         * Return the locale that yargs is currently using.
-         *
-         * By default, yargs will auto-detect the operating system's locale so that yargs-generated help content will display in the user's language.
-         */
-        locale(): string;
-        /**
-         * Override the auto-detected locale from the user's operating system with a static locale.
-         * Note that the OS locale can be modified by setting/exporting the `LC_ALL` environment variable.
-         */
-        locale(loc: string): Argv<T>;
-
-        /**
-         * Define global middleware functions to be called first, in list order, for all cli command.
-         * @param callbacks Can be a function or a list of functions. Each callback gets passed a reference to argv.
-         * @param [applyBeforeValidation] Set to `true` to apply middleware before validation. This will execute the middleware prior to validation checks, but after parsing.
-         */
-        middleware(callbacks: MiddlewareFunction<T> | ReadonlyArray<MiddlewareFunction<T>>, applyBeforeValidation?: boolean): Argv<T>;
-
-        /**
-         * The number of arguments that should be consumed after a key. This can be a useful hint to prevent parsing ambiguity.
-         *
-         * Optionally `.nargs()` can take an object of `key`/`narg` pairs.
-         */
-        nargs(key: string, count: number): Argv<T>;
-        nargs(nargs: { [key: string]: number }): Argv<T>;
-
         /** The key provided represents a path and should have `path.normalize()` applied. */
         normalize<K extends keyof T>(key: K | ReadonlyArray<K>): Argv<Omit<T, K> & { [key in K]: ToString<T[key]> }>;
         normalize<K extends string>(key: K | ReadonlyArray<K>): Argv<T & { [key in K]: string | undefined }>;
@@ -424,12 +227,6 @@ declare namespace yargs {
          */
         number<K extends keyof T>(key: K | ReadonlyArray<K>): Argv<Omit<T, K> & { [key in K]: ToNumber<T[key]> }>;
         number<K extends string>(key: K | ReadonlyArray<K>): Argv<T & { [key in K]: number | undefined }>;
-
-        /**
-         * Method to execute when a command finishes successfully.
-         * @param func Is called with the successful result of the command that finished.
-         */
-        onFinishCommand(func: (result: any) => void): Argv<T>;
 
         /**
          * This method can be used to make yargs aware of options that could exist.
@@ -457,30 +254,11 @@ declare namespace yargs {
         parse(arg: string | ReadonlyArray<string>, context?: object, parseCallback?: ParseCallback<T>): { [key in keyof Arguments<T> as key | CamelCaseKey<key>]: Arguments<T>[key] };
 
         /**
-         * If the arguments have not been parsed, this property is `false`.
-         *
-         * If the arguments have been parsed, this contain detailed parsed arguments.
-         */
-        parsed: DetailedArguments | false;
-
-        /** Allows to configure advanced yargs features. */
-        parserConfiguration(configuration: Partial<ParserConfigurationOptions>): Argv<T>;
-
-        /**
-         * Similar to `config()`, indicates that yargs should interpret the object from the specified key in package.json as a configuration object.
-         * @param [cwd] If provided, the package.json will be read from this location
-         */
-        pkgConf(key: string | ReadonlyArray<string>, cwd?: string): Argv<T>;
-
-        /**
          * Allows you to configure a command's positional arguments with an API similar to `.option()`.
          * `.positional()` should be called in a command's builder function, and is not available on the top-level yargs instance. If so, it will throw an error.
          */
         positional<K extends keyof T, O extends PositionalOptions>(key: K, opt: O): Argv<Omit<T, K> & { [key in K]: InferredOptionType<O> }>;
         positional<K extends string, O extends PositionalOptions>(key: K, opt: O): Argv<T & { [key in K]: InferredOptionType<O> }>;
-
-        /** Should yargs provide suggestions regarding similar commands if no matching command is found? */
-        recommendCommands(): Argv<T>;
 
         /**
          * @deprecated since version 6.6.0
@@ -506,79 +284,6 @@ declare namespace yargs {
         required(positionals: number, required: boolean): Argv<T>;
         required(positionals: number, msg: string): Argv<T>;
 
-        requiresArg(key: string | ReadonlyArray<string>): Argv<T>;
-
-        /**
-         * @deprecated since version 6.6.0
-         * Use '.global()' instead
-         */
-        reset(): Argv<T>;
-
-        /** Set the name of your script ($0). Default is the base filename executed by node (`process.argv[1]`) */
-        scriptName($0: string): Argv<T>;
-
-        /**
-         * Generate a bash completion script.
-         * Users of your application can install this script in their `.bashrc`, and yargs will provide completion shortcuts for commands and options.
-         */
-        showCompletionScript(): Argv<T>;
-
-        /**
-         * Configure the `--show-hidden` option that displays the hidden keys (see `hide()`).
-         * @param option If `boolean`, it enables/disables this option altogether. i.e. hidden keys will be permanently hidden if first argument is `false`.
-         * If `string` it changes the key name ("--show-hidden").
-         * @param description Changes the default description ("Show hidden options")
-         */
-        showHidden(option?: string | boolean): Argv<T>;
-        showHidden(option: string, description?: string): Argv<T>;
-
-        /**
-         * Print the usage data using the console function consoleLevel for printing.
-         * @param [consoleLevel='error']
-         */
-        showHelp(consoleLevel?: string): Argv<T>;
-
-        /**
-         * Provide the usage data as a string.
-         * @param printCallback a function with a single argument.
-         */
-        showHelp(printCallback: (s: string) => void): Argv<T>;
-
-        /**
-         * By default, yargs outputs a usage string if any error is detected.
-         * Use the `.showHelpOnFail()` method to customize this behavior.
-         * @param enable If `false`, the usage string is not output.
-         * @param [message] Message that is output after the error message.
-         */
-        showHelpOnFail(enable: boolean, message?: string): Argv<T>;
-
-        /** Specifies either a single option key (string), or an array of options. If any of the options is present, yargs validation is skipped. */
-        skipValidation(key: string | ReadonlyArray<string>): Argv<T>;
-
-        /**
-         * Any command-line argument given that is not demanded, or does not have a corresponding description, will be reported as an error.
-         *
-         * Unrecognized commands will also be reported as errors.
-         */
-        strict(): Argv<T>;
-        strict(enabled: boolean): Argv<T>;
-
-        /**
-         * Similar to .strict(), except that it only applies to unrecognized commands.
-         * A user can still provide arbitrary options, but unknown positional commands
-         * will raise an error.
-         */
-        strictCommands(): Argv<T>;
-        strictCommands(enabled: boolean): Argv<T>;
-
-        /**
-         * Similar to `.strict()`, except that it only applies to unrecognized options. A
-         * user can still provide arbitrary positional options, but unknown options
-         * will raise an error.
-         */
-        strictOptions(): Argv<T>;
-        strictOptions(enabled: boolean): Argv<T>;
-
         /**
          * Tell the parser logic not to interpret `key` as a number or boolean. This can be useful if you need to preserve leading zeros in an input.
          *
@@ -588,18 +293,6 @@ declare namespace yargs {
          */
         string<K extends keyof T>(key: K | ReadonlyArray<K>): Argv<Omit<T, K> & { [key in K]: ToString<T[key]> }>;
         string<K extends string>(key: K | ReadonlyArray<K>): Argv<T & { [key in K]: string | undefined }>;
-
-        // Intended to be used with '.wrap()'
-        terminalWidth(): number;
-
-        updateLocale(obj: { [key: string]: string }): Argv<T>;
-
-        /**
-         * Override the default strings used by yargs with the key/value pairs provided in obj
-         *
-         * If you explicitly specify a locale(), you should do so before calling `updateStrings()`.
-         */
-        updateStrings(obj: { [key: string]: string }): Argv<T>;
 
         /**
          * Set a usage message to show which commands to use.
@@ -614,6 +307,317 @@ declare namespace yargs {
         usage<U>(command: string | ReadonlyArray<string>, showInHelp: boolean, builder?: (args: Argv<T>) => Argv<U>, handler?: (args: Arguments<WithCamelCaseKeys<U>>) => void): Argv<T>;
         usage<O extends { [key: string]: Options }>(command: string | ReadonlyArray<string>, description: string, builder?: O, handler?: (args: Arguments<WithCamelCaseKeys<InferredOptionTypes<O>>>) => void): Argv<T>;
         usage<O extends { [key: string]: Options }>(command: string | ReadonlyArray<string>, showInHelp: boolean, builder?: O, handler?: (args: Arguments<WithCamelCaseKeys<InferredOptionTypes<O>>>) => void): Argv<T>;
+    }
+
+    interface ArgvCoreSimples<T, ChainResult> {
+        /**
+         * Check that certain conditions are met in the provided arguments.
+         * @param func Called with two arguments, the parsed `argv` hash and an array of options and their aliases.
+         * If `func` throws or returns a non-truthy value, show the thrown error, usage information, and exit.
+         * @param global Indicates whether `check()` should be enabled both at the top-level and for each sub-command.
+         */
+        check(func: (argv: Arguments<T>, aliases: { [alias: string]: string }) => any, global?: boolean): ChainResult;
+
+        // Advanced API
+        /** Apply command modules from a directory relative to the module calling this method. */
+        commandDir(dir: string, opts?: RequireDirectoryOptions): ChainResult;
+
+        /**
+         * Enable bash/zsh-completion shortcuts for commands and options.
+         *
+         * If invoked without parameters, `.completion()` will make completion the command to output the completion script.
+         *
+         * @param [cmd] When present in `argv._`, will result in the `.bashrc` or `.zshrc` completion script being outputted.
+         * To enable bash/zsh completions, concat the generated script to your `.bashrc` or `.bash_profile` (or `.zshrc` for zsh).
+         * @param [description] Provide a description in your usage instructions for the command that generates the completion scripts.
+         * @param [func] Rather than relying on yargs' default completion functionality, which shiver me timbers is pretty awesome, you can provide your own completion method.
+         */
+        completion(): ChainResult;
+        completion(cmd: string, func?: AsyncCompletionFunction): ChainResult;
+        completion(cmd: string, func?: SyncCompletionFunction): ChainResult;
+        completion(cmd: string, func?: PromiseCompletionFunction): ChainResult;
+        completion(cmd: string, description?: string | false, func?: AsyncCompletionFunction): ChainResult;
+        completion(cmd: string, description?: string | false, func?: SyncCompletionFunction): ChainResult;
+        completion(cmd: string, description?: string | false, func?: PromiseCompletionFunction): ChainResult;
+
+        /**
+         * Tells the parser that if the option specified by `key` is passed in, it should be interpreted as a path to a JSON config file.
+         * The file is loaded and parsed, and its properties are set as arguments.
+         * Because the file is loaded using Node's require(), the filename MUST end in `.json` to be interpreted correctly.
+         *
+         * If invoked without parameters, `.config()` will make --config the option to pass the JSON config file.
+         *
+         * @param [description] Provided to customize the config (`key`) option in the usage string.
+         * @param [explicitConfigurationObject] An explicit configuration `object`
+         */
+        config(): ChainResult;
+        config(key: string | ReadonlyArray<string>, description?: string, parseFn?: (configPath: string) => object): ChainResult;
+        config(key: string | ReadonlyArray<string>, parseFn: (configPath: string) => object): ChainResult;
+        config(explicitConfigurationObject: object): ChainResult;
+
+        /**
+         * Given the key `x` is set, the key `y` must not be set. `y` can either be a single string or an array of argument names that `x` conflicts with.
+         *
+         * Optionally `.conflicts()` can accept an object specifying multiple conflicting keys.
+         */
+        conflicts(key: string, value: string | ReadonlyArray<string>): ChainResult;
+        conflicts(conflicts: { [key: string]: string | ReadonlyArray<string> }): ChainResult;
+
+        /**
+         * Demand in context of commands.
+         * You can demand a minimum and a maximum number a user can have within your program, as well as provide corresponding error messages if either of the demands is not met.
+         */
+        demandCommand(): ChainResult;
+        demandCommand(min: number, minMsg?: string): ChainResult;
+        demandCommand(min: number, max?: number, minMsg?: string, maxMsg?: string): ChainResult;
+
+        /**
+         * Shows a [deprecated] notice in front of the option
+         */
+        deprecateOption(option: string, msg?: string): ChainResult;
+
+        /**
+         * Describe a `key` for the generated usage information.
+         *
+         * Optionally `.describe()` can take an object that maps keys to descriptions.
+         */
+        describe(key: string | ReadonlyArray<string>, description: string): ChainResult;
+        describe(descriptions: { [key: string]: string }): ChainResult;
+
+        /** Should yargs attempt to detect the os' locale? Defaults to `true`. */
+        detectLocale(detect: boolean): ChainResult;
+
+        /**
+         * Tell yargs to parse environment variables matching the given prefix and apply them to argv as though they were command line arguments.
+         *
+         * Use the "__" separator in the environment variable to indicate nested options. (e.g. prefix_nested__foo => nested.foo)
+         *
+         * If this method is called with no argument or with an empty string or with true, then all env vars will be applied to argv.
+         *
+         * Program arguments are defined in this order of precedence:
+         * 1. Command line args
+         * 2. Env vars
+         * 3. Config file/objects
+         * 4. Configured defaults
+         *
+         * Env var parsing is disabled by default, but you can also explicitly disable it by calling `.env(false)`, e.g. if you need to undo previous configuration.
+         */
+        env(): ChainResult;
+        env(prefix: string): ChainResult;
+        env(enable: boolean): ChainResult;
+
+        /** A message to print at the end of the usage instructions */
+        epilog(msg: string): ChainResult;
+        /** A message to print at the end of the usage instructions */
+        epilogue(msg: string): ChainResult;
+
+        /**
+         * Give some example invocations of your program.
+         * Inside `cmd`, the string `$0` will get interpolated to the current script name or node command for the present script similar to how `$0` works in bash or perl.
+         * Examples will be printed out as part of the help message.
+         */
+        example(command: string, description: string): ChainResult;
+        example(command: ReadonlyArray<[string, string?]>): ChainResult;
+
+        /** Manually indicate that the program should exit, and provide context about why we wanted to exit. Follows the behavior set by `.exitProcess().` */
+        exit(code: number, err: Error): void;
+
+        /**
+         * By default, yargs exits the process when the user passes a help flag, the user uses the `.version` functionality, validation fails, or the command handler fails.
+         * Calling `.exitProcess(false)` disables this behavior, enabling further actions after yargs have been validated.
+         */
+        exitProcess(enabled: boolean): ChainResult;
+
+        /**
+         * Method to execute when a failure occurs, rather than printing the failure message.
+         * @param func Is called with the failure message that would have been printed, the Error instance originally thrown and yargs state when the failure occurred.
+         */
+        fail(func: (msg: string, err: Error, yargs: ChainResult) => any): ChainResult;
+
+        /**
+         * Allows to programmatically get completion choices for any line.
+         * @param args An array of the words in the command line to complete.
+         * @param done The callback to be called with the resulting completions.
+         */
+        getCompletion(args: ReadonlyArray<string>, done: (completions: ReadonlyArray<string>) => void): ChainResult;
+
+        /**
+         * Indicate that an option (or group of options) should not be reset when a command is executed
+         *
+         * Options default to being global.
+         */
+        global(key: string | ReadonlyArray<string>): ChainResult;
+
+        /** Given a key, or an array of keys, places options under an alternative heading when displaying usage instructions */
+        group(key: string | ReadonlyArray<string>, groupName: string): ChainResult;
+
+        /** Hides a key from the generated usage information. Unless a `--show-hidden` option is also passed with `--help` (see `showHidden()`). */
+        hide(key: string): ChainResult;
+
+        /**
+         * Configure an (e.g. `--help`) and implicit command that displays the usage string and exits the process.
+         * By default yargs enables help on the `--help` option.
+         *
+         * Note that any multi-char aliases (e.g. `help`) used for the help option will also be used for the implicit command.
+         * If there are no multi-char aliases (e.g. `h`), then all single-char aliases will be used for the command.
+         *
+         * If invoked without parameters, `.help()` will use `--help` as the option and help as the implicit command to trigger help output.
+         *
+         * @param [description] Customizes the description of the help option in the usage string.
+         * @param [enableExplicit] If `false` is provided, it will disable --help.
+         */
+        help(): ChainResult;
+        help(enableExplicit: boolean): ChainResult;
+        help(option: string, enableExplicit: boolean): ChainResult;
+        help(option: string, description?: string, enableExplicit?: boolean): ChainResult;
+
+        /**
+         * Given the key `x` is set, it is required that the key `y` is set.
+         * y` can either be the name of an argument to imply, a number indicating the position of an argument or an array of multiple implications to associate with `x`.
+         *
+         * Optionally `.implies()` can accept an object specifying multiple implications.
+         */
+        implies(key: string, value: string | ReadonlyArray<string>): ChainResult;
+        implies(implies: { [key: string]: string | ReadonlyArray<string> }): ChainResult;
+
+        /**
+         * Return the locale that yargs is currently using.
+         *
+         * By default, yargs will auto-detect the operating system's locale so that yargs-generated help content will display in the user's language.
+         */
+        locale(): string;
+        /**
+         * Override the auto-detected locale from the user's operating system with a static locale.
+         * Note that the OS locale can be modified by setting/exporting the `LC_ALL` environment variable.
+         */
+        locale(loc: string): ChainResult;
+
+        /**
+         * Define global middleware functions to be called first, in list order, for all cli command.
+         * @param callbacks Can be a function or a list of functions. Each callback gets passed a reference to argv.
+         * @param [applyBeforeValidation] Set to `true` to apply middleware before validation. This will execute the middleware prior to validation checks, but after parsing.
+         */
+        middleware(callbacks: MiddlewareFunction<T> | ReadonlyArray<MiddlewareFunction<T>>, applyBeforeValidation?: boolean): ChainResult;
+
+        /**
+         * The number of arguments that should be consumed after a key. This can be a useful hint to prevent parsing ambiguity.
+         *
+         * Optionally `.nargs()` can take an object of `key`/`narg` pairs.
+         */
+        nargs(key: string, count: number): ChainResult;
+        nargs(nargs: { [key: string]: number }): ChainResult;
+
+        /**
+         * Method to execute when a command finishes successfully.
+         * @param func Is called with the successful result of the command that finished.
+         */
+        onFinishCommand(func: (result: any) => void): ChainResult;
+
+        /**
+         * If the arguments have not been parsed, this property is `false`.
+         *
+         * If the arguments have been parsed, this contain detailed parsed arguments.
+         */
+        parsed: DetailedArguments | false;
+
+        /** Allows to configure advanced yargs features. */
+        parserConfiguration(configuration: Partial<ParserConfigurationOptions> & { 'camel-case-expansion': false }): ArgvNoCamelCase<T>;
+        parserConfiguration(configuration: Partial<ParserConfigurationOptions> & { 'camel-case-expansion': true }): Argv<T>;
+        parserConfiguration(configuration: Partial<ParserConfigurationOptions>): ChainResult;
+
+        /**
+         * Similar to `config()`, indicates that yargs should interpret the object from the specified key in package.json as a configuration object.
+         * @param [cwd] If provided, the package.json will be read from this location
+         */
+        pkgConf(key: string | ReadonlyArray<string>, cwd?: string): ChainResult;
+
+        /** Should yargs provide suggestions regarding similar commands if no matching command is found? */
+        recommendCommands(): ChainResult;
+
+        requiresArg(key: string | ReadonlyArray<string>): ChainResult;
+
+        /**
+         * @deprecated since version 6.6.0
+         * Use '.global()' instead
+         */
+        reset(): ChainResult;
+
+        /** Set the name of your script ($0). Default is the base filename executed by node (`process.argv[1]`) */
+        scriptName($0: string): ChainResult;
+
+        /**
+         * Generate a bash completion script.
+         * Users of your application can install this script in their `.bashrc`, and yargs will provide completion shortcuts for commands and options.
+         */
+        showCompletionScript(): ChainResult;
+
+        /**
+         * Configure the `--show-hidden` option that displays the hidden keys (see `hide()`).
+         * @param option If `boolean`, it enables/disables this option altogether. i.e. hidden keys will be permanently hidden if first argument is `false`.
+         * If `string` it changes the key name ("--show-hidden").
+         * @param description Changes the default description ("Show hidden options")
+         */
+        showHidden(option?: string | boolean): ChainResult;
+        showHidden(option: string, description?: string): ChainResult;
+
+        /**
+         * Print the usage data using the console function consoleLevel for printing.
+         * @param [consoleLevel='error']
+         */
+        showHelp(consoleLevel?: string): ChainResult;
+
+        /**
+         * Provide the usage data as a string.
+         * @param printCallback a function with a single argument.
+         */
+        showHelp(printCallback: (s: string) => void): ChainResult;
+
+        /**
+         * By default, yargs outputs a usage string if any error is detected.
+         * Use the `.showHelpOnFail()` method to customize this behavior.
+         * @param enable If `false`, the usage string is not output.
+         * @param [message] Message that is output after the error message.
+         */
+        showHelpOnFail(enable: boolean, message?: string): ChainResult;
+
+        /** Specifies either a single option key (string), or an array of options. If any of the options is present, yargs validation is skipped. */
+        skipValidation(key: string | ReadonlyArray<string>): ChainResult;
+
+        /**
+         * Any command-line argument given that is not demanded, or does not have a corresponding description, will be reported as an error.
+         *
+         * Unrecognized commands will also be reported as errors.
+         */
+        strict(): ChainResult;
+        strict(enabled: boolean): ChainResult;
+
+        /**
+         * Similar to .strict(), except that it only applies to unrecognized commands.
+         * A user can still provide arbitrary options, but unknown positional commands
+         * will raise an error.
+         */
+        strictCommands(): ChainResult;
+        strictCommands(enabled: boolean): ChainResult;
+
+        /**
+         * Similar to `.strict()`, except that it only applies to unrecognized options. A
+         * user can still provide arbitrary positional options, but unknown options
+         * will raise an error.
+         */
+        strictOptions(): ChainResult;
+        strictOptions(enabled: boolean): ChainResult;
+
+        // Intended to be used with '.wrap()'
+        terminalWidth(): number;
+
+        updateLocale(obj: { [key: string]: string }): ChainResult;
+
+        /**
+         * Override the default strings used by yargs with the key/value pairs provided in obj
+         *
+         * If you explicitly specify a locale(), you should do so before calling `updateStrings()`.
+         */
+        updateStrings(obj: { [key: string]: string }): ChainResult;
 
         /**
          * Add an option (e.g. `--version`) that displays the version number (given by the version parameter) and exits the process.
@@ -623,11 +627,11 @@ declare namespace yargs {
          *
          * If the boolean argument `false` is provided, it will disable `--version`.
          */
-        version(): Argv<T>;
-        version(version: string): Argv<T>;
-        version(enable: boolean): Argv<T>;
-        version(optionKey: string, version: string): Argv<T>;
-        version(optionKey: string, description: string, version: string): Argv<T>;
+        version(): ChainResult;
+        version(version: string): ChainResult;
+        version(enable: boolean): ChainResult;
+        version(optionKey: string, version: string): ChainResult;
+        version(optionKey: string, description: string, version: string): ChainResult;
 
         /**
          * Format usage output to wrap at columns many columns.
@@ -635,7 +639,132 @@ declare namespace yargs {
          * By default wrap will be set to `Math.min(80, windowWidth)`. Use `.wrap(null)` to specify no column limit (no right-align).
          * Use `.wrap(yargs.terminalWidth())` to maximize the width of yargs' usage instructions.
          */
-        wrap(columns: number | null): Argv<T>;
+        wrap(columns: number | null): ChainResult;
+    }
+
+    interface ArgvNoCamelCase<T> extends ArgvCoreSimples<T, ArgvNoCamelCase<T>> {
+        (): { [key in keyof Arguments<T>]: Arguments<T>[key] };
+
+        alias<K1 extends keyof T, K2 extends string>(shortName: K1, longName: K2 | ReadonlyArray<K2>): ArgvNoCamelCase<T & { [key in K2]: T[K1] }>;
+        alias<K1 extends keyof T, K2 extends string>(shortName: K2, longName: K1 | ReadonlyArray<K1>): ArgvNoCamelCase<T & { [key in K2]: T[K1] }>;
+        alias(shortName: string | ReadonlyArray<string>, longName: string | ReadonlyArray<string>): ArgvNoCamelCase<T>;
+        alias(aliases: { [shortName: string]: string | ReadonlyArray<string> }): ArgvNoCamelCase<T>;
+
+        argv: { [key in keyof Arguments<T>]: Arguments<T>[key] };
+
+        array<K extends keyof T>(key: K | ReadonlyArray<K>): ArgvNoCamelCase<Omit<T, K> & { [key in K]: ToArray<T[key]> }>;
+        array<K extends string>(key: K | ReadonlyArray<K>): ArgvNoCamelCase<T & { [key in K]: Array<string | number> | undefined }>;
+
+        boolean<K extends keyof T>(key: K | ReadonlyArray<K>): ArgvNoCamelCase<Omit<T, K> & { [key in K]: boolean | undefined }>;
+        boolean<K extends string>(key: K | ReadonlyArray<K>): ArgvNoCamelCase<T & { [key in K]: boolean | undefined }>;
+
+        choices<K extends keyof T, C extends ReadonlyArray<any>>(key: K, values: C): ArgvNoCamelCase<Omit<T, K> & { [key in K]: C[number] | undefined }>;
+        choices<K extends string, C extends ReadonlyArray<any>>(key: K, values: C): ArgvNoCamelCase<T & { [key in K]: C[number] | undefined }>;
+        choices<C extends { [key: string]: ReadonlyArray<any> }>(choices: C): ArgvNoCamelCase<Omit<T, keyof C> & { [key in keyof C]: C[key][number] | undefined }>;
+
+        coerce<K extends keyof T, V>(key: K | ReadonlyArray<K>, func: (arg: any) => V): ArgvNoCamelCase<Omit<T, K> & { [key in K]: V | undefined }>;
+        coerce<K extends string, V>(key: K | ReadonlyArray<K>, func: (arg: any) => V): ArgvNoCamelCase<T & { [key in K]: V | undefined }>;
+        coerce<O extends { [key: string]: (arg: any) => any }>(opts: O): ArgvNoCamelCase<Omit<T, keyof O> & { [key in keyof O]: ReturnType<O[key]> | undefined }>;
+
+        command<U = T>(
+            command: string | ReadonlyArray<string>,
+            description: string,
+            builder?: BuilderCallback<T, U>,
+            handler?: (args: Arguments<U>) => void,
+            middlewares?: MiddlewareFunction[],
+            deprecated?: boolean | string,
+        ): ArgvNoCamelCase<U>;
+        command<O extends { [key: string]: Options }>(
+            command: string | ReadonlyArray<string>,
+            description: string,
+            builder?: O,
+            handler?: (args: Arguments<InferredOptionTypes<O>>) => void,
+            middlewares?: MiddlewareFunction[],
+            deprecated?: boolean | string,
+        ): ArgvNoCamelCase<T>;
+        command<U>(command: string | ReadonlyArray<string>, description: string, module: CommandModule<T, U>): ArgvNoCamelCase<U>;
+        command<U = T>(
+            command: string | ReadonlyArray<string>,
+            showInHelp: false,
+            builder?: BuilderCallback<T, U>,
+            handler?: (args: Arguments<U>) => void,
+            middlewares?: MiddlewareFunction[],
+            deprecated?: boolean | string,
+        ): ArgvNoCamelCase<T>;
+        command<O extends { [key: string]: Options }>(
+            command: string | ReadonlyArray<string>,
+            showInHelp: false,
+            builder?: O,
+            handler?: (args: Arguments<InferredOptionTypes<O>>) => void,
+        ): ArgvNoCamelCase<T>;
+        command<U>(command: string | ReadonlyArray<string>, showInHelp: false, module: CommandModule<T, U>): ArgvNoCamelCase<U>;
+        command<U>(module: CommandModule<T, U>): ArgvNoCamelCase<U>;
+
+        count<K extends keyof T>(key: K | ReadonlyArray<K>): ArgvNoCamelCase<Omit<T, K> & { [key in K]: number }>;
+        count<K extends string>(key: K | ReadonlyArray<K>): ArgvNoCamelCase<T & { [key in K]: number }>;
+
+        default<K extends keyof T, V>(key: K, value: V, description?: string): ArgvNoCamelCase<Omit<T, K> & { [key in K]: V }>;
+        default<K extends string, V>(key: K, value: V, description?: string): ArgvNoCamelCase<T & { [key in K]: V }>;
+        default<D extends { [key: string]: any }>(defaults: D, description?: string): ArgvNoCamelCase<Omit<T, keyof D> & D>;
+
+        /** @deprecated since version 6.6.0 */
+        demand<K extends keyof T>(key: K | ReadonlyArray<K>, msg?: string | true): ArgvNoCamelCase<Defined<T, K>>;
+        demand<K extends string>(key: K | ReadonlyArray<K>, msg?: string | true): ArgvNoCamelCase<T & { [key in K]: unknown }>;
+        demand(key: string | ReadonlyArray<string>, required?: boolean): ArgvNoCamelCase<T>;
+        demand(positionals: number, msg: string): ArgvNoCamelCase<T>;
+        demand(positionals: number, required?: boolean): ArgvNoCamelCase<T>;
+        demand(positionals: number, max: number, msg?: string): ArgvNoCamelCase<T>;
+
+        demandOption<K extends keyof T>(key: K | ReadonlyArray<K>, msg?: string | true): ArgvNoCamelCase<Defined<T, K>>;
+        demandOption<K extends string>(key: K | ReadonlyArray<K>, msg?: string | true): ArgvNoCamelCase<T & { [key in K]: unknown }>;
+        demandOption(key: string | ReadonlyArray<string>, demand?: boolean): ArgvNoCamelCase<T>;
+
+        normalize<K extends keyof T>(key: K | ReadonlyArray<K>): ArgvNoCamelCase<Omit<T, K> & { [key in K]: ToString<T[key]> }>;
+        normalize<K extends string>(key: K | ReadonlyArray<K>): ArgvNoCamelCase<T & { [key in K]: string | undefined }>;
+
+        number<K extends keyof T>(key: K | ReadonlyArray<K>): ArgvNoCamelCase<Omit<T, K> & { [key in K]: ToNumber<T[key]> }>;
+        number<K extends string>(key: K | ReadonlyArray<K>): ArgvNoCamelCase<T & { [key in K]: number | undefined }>;
+
+        option<K extends keyof T, O extends Options>(key: K, options: O): ArgvNoCamelCase<Omit<T, K> & { [key in K]: InferredOptionType<O> }>;
+        option<K extends string, O extends Options>(key: K, options: O): ArgvNoCamelCase<T & { [key in K]: InferredOptionType<O> }>;
+        option<O extends { [key: string]: Options }>(options: O): ArgvNoCamelCase<Omit<T, keyof O> & InferredOptionTypes<O>>;
+
+        options<K extends keyof T, O extends Options>(key: K, options: O): ArgvNoCamelCase<Omit<T, K> & { [key in K]: InferredOptionType<O> }>;
+        options<K extends string, O extends Options>(key: K, options: O): ArgvNoCamelCase<T & { [key in K]: InferredOptionType<O> }>;
+        options<O extends { [key: string]: Options }>(options: O): ArgvNoCamelCase<Omit<T, keyof O> & InferredOptionTypes<O>>;
+
+        parse(): { [key in keyof Arguments<T>]: Arguments<T>[key] };
+        parse(arg: string | ReadonlyArray<string>, context?: object, parseCallback?: ParseCallback<T>): { [key in keyof Arguments<T>]: Arguments<T>[key] };
+
+        positional<K extends keyof T, O extends PositionalOptions>(key: K, opt: O): ArgvNoCamelCase<Omit<T, K> & { [key in K]: InferredOptionType<O> }>;
+        positional<K extends string, O extends PositionalOptions>(key: K, opt: O): ArgvNoCamelCase<T & { [key in K]: InferredOptionType<O> }>;
+
+        /** @deprecated since version 6.6.0 */
+        require<K extends keyof T>(key: K | ReadonlyArray<K>, msg?: string | true): ArgvNoCamelCase<Defined<T, K>>;
+        require(key: string, msg: string): ArgvNoCamelCase<T>;
+        require(key: string, required: boolean): ArgvNoCamelCase<T>;
+        require(keys: ReadonlyArray<number>, msg: string): ArgvNoCamelCase<T>;
+        require(keys: ReadonlyArray<number>, required: boolean): ArgvNoCamelCase<T>;
+        require(positionals: number, required: boolean): ArgvNoCamelCase<T>;
+        require(positionals: number, msg: string): ArgvNoCamelCase<T>;
+
+        /** @deprecated since version 6.6.0 */
+        required<K extends keyof T>(key: K | ReadonlyArray<K>, msg?: string | true): ArgvNoCamelCase<Defined<T, K>>;
+        required(key: string, msg: string): ArgvNoCamelCase<T>;
+        required(key: string, required: boolean): ArgvNoCamelCase<T>;
+        required(keys: ReadonlyArray<number>, msg: string): ArgvNoCamelCase<T>;
+        required(keys: ReadonlyArray<number>, required: boolean): ArgvNoCamelCase<T>;
+        required(positionals: number, required: boolean): ArgvNoCamelCase<T>;
+        required(positionals: number, msg: string): ArgvNoCamelCase<T>;
+
+        string<K extends keyof T>(key: K | ReadonlyArray<K>): ArgvNoCamelCase<Omit<T, K> & { [key in K]: ToString<T[key]> }>;
+        string<K extends string>(key: K | ReadonlyArray<K>): ArgvNoCamelCase<T & { [key in K]: string | undefined }>;
+
+        usage(message: string): ArgvNoCamelCase<T>;
+        usage<U>(command: string | ReadonlyArray<string>, description: string, builder?: (args: ArgvNoCamelCase<T>) => ArgvNoCamelCase<U>, handler?: (args: Arguments<U>) => void): ArgvNoCamelCase<T>;
+        usage<U>(command: string | ReadonlyArray<string>, showInHelp: boolean, builder?: (args: ArgvNoCamelCase<T>) => ArgvNoCamelCase<U>, handler?: (args: Arguments<U>) => void): ArgvNoCamelCase<T>;
+        usage<O extends { [key: string]: Options }>(command: string | ReadonlyArray<string>, description: string, builder?: O, handler?: (args: Arguments<InferredOptionTypes<O>>) => void): ArgvNoCamelCase<T>;
+        usage<O extends { [key: string]: Options }>(command: string | ReadonlyArray<string>, showInHelp: boolean, builder?: O, handler?: (args: Arguments<InferredOptionTypes<O>>) => void): ArgvNoCamelCase<T>;
     }
 
     type Arguments<T = {}> = T & {
