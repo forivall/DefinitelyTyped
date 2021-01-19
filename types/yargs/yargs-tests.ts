@@ -1292,17 +1292,6 @@ function makeSingleton() {
     yargsSingleton(process.argv.slice(2));
 }
 
-function Argv$strictOptions() {
-    // test taken from https://github.com/yargs/yargs/blob/master/test/validation.cjs#L1036
-    const argv1 = yargs
-    .command('foo', 'foo command')
-    .option('a', {
-        describe: 'a is for option'
-    })
-    .strictOptions()
-    .argv;
-}
-
 function Argv$strictCommands() {
     const argv1 = yargs.strictCommands().command('foo', 'foo command').argv;
     const argv2 = yargs.strictCommands(true).command('foo', 'foo command').argv;
