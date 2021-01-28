@@ -43,7 +43,7 @@ declare namespace yargs {
      * `Arguments<T>` to simplify the inferred type signature in client code.
      */
     interface Argv<T = {}> {
-        (): Arguments<WithCamelCaseKeys<T>>;
+        (): ArgumentsCamelCase<T>;
         (args: ReadonlyArray<string>, cwd?: string): Argv<T>;
 
         /**
@@ -147,7 +147,7 @@ declare namespace yargs {
             command: string | ReadonlyArray<string>,
             description: string,
             builder?: BuilderCallback<T, U>,
-            handler?: (args: Arguments<WithCamelCaseKeys<U>>) => void,
+            handler?: (args: ArgumentsCamelCase<U>) => void,
             middlewares?: MiddlewareFunction[],
             deprecated?: boolean | string,
         ): Argv<U>;
@@ -155,7 +155,7 @@ declare namespace yargs {
             command: string | ReadonlyArray<string>,
             description: string,
             builder?: O,
-            handler?: (args: Arguments<WithCamelCaseKeys<InferredOptionTypes<O>>>) => void,
+            handler?: (args: ArgumentsCamelCase<InferredOptionTypes<O>>) => void,
             middlewares?: MiddlewareFunction[],
             deprecated?: boolean | string,
         ): Argv<T>;
@@ -164,7 +164,7 @@ declare namespace yargs {
             command: string | ReadonlyArray<string>,
             showInHelp: false,
             builder?: BuilderCallback<T, U>,
-            handler?: (args: Arguments<WithCamelCaseKeys<U>>) => void,
+            handler?: (args: ArgumentsCamelCase<U>) => void,
             middlewares?: MiddlewareFunction[],
             deprecated?: boolean | string,
         ): Argv<T>;
@@ -172,7 +172,7 @@ declare namespace yargs {
             command: string | ReadonlyArray<string>,
             showInHelp: false,
             builder?: O,
-            handler?: (args: Arguments<WithCamelCaseKeys<InferredOptionTypes<O>>>) => void,
+            handler?: (args: ArgumentsCamelCase<InferredOptionTypes<O>>) => void,
         ): Argv<T>;
         command<U>(command: string | ReadonlyArray<string>, showInHelp: false, module: CommandModule<T, U>): Argv<U>;
         command<U>(module: CommandModule<T, U>): Argv<U>;
@@ -609,19 +609,19 @@ declare namespace yargs {
          * and allows you to provide configuration for the positional arguments accepted by your program:
          */
         usage(message: string): Argv<T>;
-        usage<U>(command: string | ReadonlyArray<string>, description: string, builder?: (args: Argv<T>) => Argv<U>, handler?: (args: Arguments<WithCamelCaseKeys<U>>) => void): Argv<T>;
-        usage<U>(command: string | ReadonlyArray<string>, showInHelp: boolean, builder?: (args: Argv<T>) => Argv<U>, handler?: (args: Arguments<WithCamelCaseKeys<U>>) => void): Argv<T>;
+        usage<U>(command: string | ReadonlyArray<string>, description: string, builder?: (args: Argv<T>) => Argv<U>, handler?: (args: ArgumentsCamelCase<U>) => void): Argv<T>;
+        usage<U>(command: string | ReadonlyArray<string>, showInHelp: boolean, builder?: (args: Argv<T>) => Argv<U>, handler?: (args: ArgumentsCamelCase<U>) => void): Argv<T>;
         usage<O extends { [key: string]: Options }>(
             command: string | ReadonlyArray<string>,
             description: string,
             builder?: O,
-            handler?: (args: Arguments<WithCamelCaseKeys<InferredOptionTypes<O>>>) => void,
+            handler?: (args: ArgumentsCamelCase<InferredOptionTypes<O>>) => void,
         ): Argv<T>;
         usage<O extends { [key: string]: Options }>(
             command: string | ReadonlyArray<string>,
             showInHelp: boolean,
             builder?: O,
-            handler?: (args: Arguments<WithCamelCaseKeys<InferredOptionTypes<O>>>) => void,
+            handler?: (args: ArgumentsCamelCase<InferredOptionTypes<O>>) => void,
         ): Argv<T>;
 
         /**
@@ -648,6 +648,16 @@ declare namespace yargs {
     }
 
     type Arguments<T = {}> = T & {
+        /** Non-option arguments */
+        _: Array<string | number>;
+        /** The script name or node command */
+        $0: string;
+        /** All remaining options */
+        [argName: string]: unknown;
+    };
+
+    /** Add camelcased keys to object */
+    type ArgumentsCamelCase<T = {}> = { [key in keyof T as key | CamelCaseKey<key>]: T[key] } & {
         /** Non-option arguments */
         _: Array<string | number>;
         /** The script name or node command */
@@ -794,9 +804,6 @@ declare namespace yargs {
     /** Convert literal string types like 'foo-bar' to 'fooBar', allowing all `PropertyKey` types */
     type CamelCaseKey<K extends PropertyKey> = K extends string ? Exclude<CamelCase<K>, ''> : K;
 
-    /** Add camelcased keys to object */
-    type WithCamelCaseKeys<O extends { [key: string]: any }> = { [key in keyof O as key | CamelCaseKey<key>]: O[key] };
-
     /** Remove keys K in T */
     type Omit<T, K> = { [key in Exclude<keyof T, K>]: T[key] };
 
@@ -859,10 +866,10 @@ declare namespace yargs {
         /** string used as the description for the command in help text, use `false` for a hidden command */
         describe?: string | false;
         /** a function which will be passed the parsed argv. */
-        handler: (args: Arguments<WithCamelCaseKeys<U>>) => void;
+        handler: (args: ArgumentsCamelCase<U>) => void;
     }
 
-    type ParseCallback<T = {}> = (err: Error | undefined, argv: Arguments<WithCamelCaseKeys<T>>, output: string) => void;
+    type ParseCallback<T = {}> = (err: Error | undefined, argv: ArgumentsCamelCase<T>, output: string) => void;
     type CommandBuilder<T = {}, U = {}> = { [key: string]: Options } | ((args: Argv<T>) => Argv<U>) | ((args: Argv<T>) => PromiseLike<Argv<U>>);
     type SyncCompletionFunction = (current: string, argv: any) => string[];
     type AsyncCompletionFunction = (current: string, argv: any, done: (completion: ReadonlyArray<string>) => void) => void;
