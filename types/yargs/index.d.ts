@@ -611,8 +611,18 @@ declare namespace yargs {
         usage(message: string): Argv<T>;
         usage<U>(command: string | ReadonlyArray<string>, description: string, builder?: (args: Argv<T>) => Argv<U>, handler?: (args: Arguments<WithCamelCaseKeys<U>>) => void): Argv<T>;
         usage<U>(command: string | ReadonlyArray<string>, showInHelp: boolean, builder?: (args: Argv<T>) => Argv<U>, handler?: (args: Arguments<WithCamelCaseKeys<U>>) => void): Argv<T>;
-        usage<O extends { [key: string]: Options }>(command: string | ReadonlyArray<string>, description: string, builder?: O, handler?: (args: Arguments<WithCamelCaseKeys<InferredOptionTypes<O>>>) => void): Argv<T>;
-        usage<O extends { [key: string]: Options }>(command: string | ReadonlyArray<string>, showInHelp: boolean, builder?: O, handler?: (args: Arguments<WithCamelCaseKeys<InferredOptionTypes<O>>>) => void): Argv<T>;
+        usage<O extends { [key: string]: Options }>(
+            command: string | ReadonlyArray<string>,
+            description: string,
+            builder?: O,
+            handler?: (args: Arguments<WithCamelCaseKeys<InferredOptionTypes<O>>>) => void,
+        ): Argv<T>;
+        usage<O extends { [key: string]: Options }>(
+            command: string | ReadonlyArray<string>,
+            showInHelp: boolean,
+            builder?: O,
+            handler?: (args: Arguments<WithCamelCaseKeys<InferredOptionTypes<O>>>) => void,
+        ): Argv<T>;
 
         /**
          * Add an option (e.g. `--version`) that displays the version number (given by the version parameter) and exits the process.
