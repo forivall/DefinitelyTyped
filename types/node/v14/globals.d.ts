@@ -98,7 +98,7 @@ interface AbortController {
  * A signal object that allows you to communicate with a DOM request (such as a Fetch) and abort it if required via an AbortController object.
  * @since v14.7.0
  */
-interface AbortSignal {
+interface AbortSignal extends NodeJS.DOMEventTarget {
     /**
      * Returns true if this AbortSignal's AbortController has signaled to abort, and false otherwise.
      * @since v14.7.0

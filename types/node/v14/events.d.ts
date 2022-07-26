@@ -10,9 +10,7 @@ declare module 'events' {
         once(event: string | symbol, listener: (...args: any[]) => void): this;
     }
 
-    interface DOMEventTarget {
-        addEventListener(event: string, listener: (...args: any[]) => void, opts?: { once: boolean }): any;
-    }
+    interface DOMEventTarget extends NodeJS.DOMEventTarget {}
 
     interface EventEmitter extends NodeJS.EventEmitter {}
     class EventEmitter {
@@ -53,6 +51,9 @@ declare module 'events' {
 
     global {
         namespace NodeJS {
+            interface DOMEventTarget {
+                addEventListener(event: string, listener: (...args: any[]) => void, opts?: { once: boolean }): any;
+            }
             interface EventEmitter {
                 addListener(event: string | symbol, listener: (...args: any[]) => void): this;
                 on(event: string | symbol, listener: (...args: any[]) => void): this;

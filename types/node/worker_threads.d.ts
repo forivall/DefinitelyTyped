@@ -89,6 +89,7 @@ declare module 'worker_threads' {
         eventLoopUtilization: EventLoopUtilityFunction;
     }
     type TransferListItem = ArrayBuffer | MessagePort | FileHandle | X509Certificate | Blob;
+    interface MessagePort extends NodeJS.DOMEventTarget {}
     /**
      * Instances of the `worker.MessagePort` class represent one end of an
      * asynchronous, two-way communications channel. It can be used to transfer
@@ -477,7 +478,7 @@ declare module 'worker_threads' {
         off(event: 'online', listener: () => void): this;
         off(event: string | symbol, listener: (...args: any[]) => void): this;
     }
-    interface BroadcastChannel extends NodeJS.RefCounted {}
+    interface BroadcastChannel extends NodeJS.RefCounted, NodeJS.DOMEventTarget {}
     /**
      * Instances of `BroadcastChannel` allow asynchronous one-to-many communication
      * with all other `BroadcastChannel` instances bound to the same channel name.

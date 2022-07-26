@@ -44,15 +44,7 @@ declare module 'events' {
     interface NodeEventTarget {
         once(eventName: string | symbol, listener: (...args: any[]) => void): this;
     }
-    interface DOMEventTarget {
-        addEventListener(
-            eventName: string,
-            listener: (...args: any[]) => void,
-            opts?: {
-                once: boolean;
-            }
-        ): any;
-    }
+    interface DOMEventTarget extends NodeJS.DOMEventTarget {}
     interface StaticEventEmitterOptions {
         signal?: AbortSignal | undefined;
     }
@@ -309,6 +301,15 @@ declare module 'events' {
     }
     global {
         namespace NodeJS {
+            interface DOMEventTarget {
+                addEventListener(
+                    eventName: string,
+                    listener: (...args: any[]) => void,
+                    opts?: {
+                        once: boolean;
+                    }
+                ): any;
+            }
             interface EventEmitter {
                 /**
                  * Alias for `emitter.on(eventName, listener)`.

@@ -249,9 +249,13 @@ function fixupModuleStructure(node: DocRoot): void {
 
     // Caps
     renameModule('Events', 'events');
+    unnestModule(['events', "`eventtarget`_and_`event`_api"], 'eventtarget')
+    mergeModules('events', 'eventtarget')
     const eventsModule = getModule(node, 'events');
     const eventEmitterClass = getClass(eventsModule, 'EventEmitter');
     eventEmitterClass.classMethods = eventsModule.methods;
+    const eventTargetClass = getClass(eventsModule, 'EventTarget');
+    eventTargetClass.name = 'DOMEventTarget'
 
     unnestModule(['timers', 'timers_promises_api'], 'timers/promises');
     unnestModule(['dns', 'dns_promises_api'], 'dns/promises');
