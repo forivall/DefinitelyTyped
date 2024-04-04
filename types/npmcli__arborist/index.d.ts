@@ -91,7 +91,7 @@ declare namespace Arborist {
         add?: string[];
         saveType?: SaveType;
         saveBundle?: boolean;
-        update?: boolean | { all?: boolean; names?: string[] };
+        update?: boolean | string[] | { all?: boolean; names?: string[] };
         prune?: boolean;
         preferDedupe?: boolean;
         legacyBundling?: boolean;
