@@ -82,6 +82,9 @@ export function unparse<T>(data: T[] | UnparseObject<T>, config?: UnparseConfig)
 /** An array of characters that are not allowed as delimiters. `\r`, `\n`, `"`, `\ufeff` */
 export const BAD_DELIMITERS: readonly string[];
 
+/** The unicode Byte Order Mark (`\ufeff`) */
+export const BYTE_ORDER_MARK: "\uFEFF";
+
 /** The true delimiter. Invisible. ASCII code 30. Should be doing the job we strangely rely upon commas and tabs for. */
 export const RECORD_SEP: "\x1E";
 
